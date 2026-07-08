@@ -2,8 +2,6 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Upload, Image as ImageIcon, X } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-
 type Props = {
   tenantId: string;
   folder: string; // e.g. "branches", "categories", "suppliers", "customers"
@@ -78,5 +76,3 @@ export function ImageUploader({ tenantId, folder, value, onChange, aspect = "squ
     </div>
   );
 }
-
-export function _unused() { void Button; }
