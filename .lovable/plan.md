@@ -1,139 +1,105 @@
+## المرحلة 6 (الأخيرة) — نظام الموارد البشرية + إعادة بناء POS + الفحص الشامل
 
-# تطوير النظام إلى مستوى أنظمة المطاعم العالمية
-
-سأنفّذ الطلب على **5 مراحل متتابعة**، كل مرحلة تُختبر وتُعتمد قبل الانتقال للتالية. لا شيء من قاعدة البيانات الحالية سيُحذف؛ فقط إضافات وتوسعات.
-
----
-
-## المرحلة 1 — نظام الأدوار والصلاحيات + Super Owner
-
-### قاعدة البيانات
-
-- توسيع enum `app_role` ليشمل: `owner`, `manager`, `cashier`, `accountant`, `warehouse`, `waiter`, `kitchen` (بالإضافة للموجود).
-- جدول جديد `permissions` (كتالوج مرجعي) + `role_permissions` (ربط دور بصلاحية) لدعم **Custom Roles**.
-- جدول `custom_roles` (اسم الدور المخصص + tenant_id).
-- علم `is_super_owner` على `user_roles` أو جدول منفصل `super_owners` — لا يمكن لأحد تعديله إلا Super Owner نفسه (سياسة RLS صارمة).
-- دوال `has_permission(user, permission_key)` و `is_super_owner(user)` — SECURITY DEFINER لتجنب recursion.
-- سياسات RLS محدَّثة لكل الجداول الحالية: Super Owner يرى كل شيء عبر كل الـ tenants.
-
-### الواجهات
-- `/admin/roles` — إدارة الأدوار والصلاحيات (Super Owner فقط).
-- `/admin/super-owner` — تعيين/إزالة Super Owner (بحماية مضاعفة).
+سأنفّذ هذه المرحلة على 3 محاور متكاملة، ثم فحص شامل نهائي قبل التسليم.
 
 ---
 
-## المرحلة 2 — نظام المستخدمين الاحترافي + Profile
+### المحور 1 — نظام الموارد البشرية (HR) الاحترافي
 
-### قاعدة البيانات
-- توسيع `profiles`: `username`, `phone`, `avatar_url`, `is_active`, `last_login_at`, `branch_id` (الفرع الأساسي).
-- Trigger لتحديث `last_login_at` عبر server function عند login.
-- سياسات: المستخدم يعدّل ملفه الشخصي، المالك/المدير يعدّل ملفات فرعه، Super Owner يعدّل الكل.
+**قاعدة البيانات (Migration واحدة):**
 
-### Server Functions (بـ `requireSupabaseAuth` + فحص صلاحية)
-- `createUser` — ينشئ حساب + profile + role + يعيّن الفرع (يستخدم `supabaseAdmin` داخل handler).
-- `updateUserPassword` — تغيير كلمة مرور أي مستخدم (Super Owner/Manager).
-- `toggleUserStatus` — تفعيل/إيقاف.
-- `transferUserToBranch` — نقل بين الفروع.
+- `employees` — يمتد `profiles`: `employee_no`, `job_title`, `department`, `branch_id`, `hire_date`, `contract_type` (full_time/part_time/contract/hourly), `base_salary`, `hourly_rate`, `bank_account`, `national_id`, `emergency_contact`, `status` (active/suspended/terminated), `termination_date`, `notes`.
+- `leave_types` — كتالوج: `name`, `days_per_year`, `is_paid`, `requires_approval`, `color`.
+- `leave_requests` — `employee_id`, `leave_type_id`, `start_date`, `end_date`, `days_count`, `reason`, `status` (pending/approved/rejected), `approved_by`, `approved_at`, `rejection_reason`.
+- `attendance` — `employee_id`, `date`, `check_in`, `check_out`, `hours_worked`, `is_late`, `status` (present/absent/leave/holiday).
+- `bonuses` — `employee_id`, `amount`, `reason`, `bonus_type` (performance/eid/annual/other), `paid_date`, `payroll_id`.
+- `deductions` — `employee_id`, `amount`, `reason`, `deduction_type` (absence/late/advance/insurance/other), `applied_date`, `payroll_id`.
+- `payroll_runs` — `tenant_id`, `month`, `year`, `branch_id`, `total_gross`, `total_net`, `total_deductions`, `total_bonuses`, `status` (draft/approved/paid), `approved_by`, `paid_at`.
+- `payroll_items` — `payroll_run_id`, `employee_id`, `base_salary`, `bonuses_total`, `deductions_total`, `overtime`, `gross`, `net`, `notes`.
+- دالة `calculate_employee_payroll(emp_id, month, year)` — تجمع الأساسي + المكافآت + الحسميات + الحضور.
+- سياسات RLS: المدير يرى موظفي فرعه، المالك يرى الكل، الموظف يرى بياناته فقط، Super Owner كل شيء.
+- GRANTs كاملة لكل جدول.
 
-### الواجهات
-- `/users` (تحديث) — جدول احترافي: صورة، اسم، دور، فرع، حالة، آخر دخول، إجراءات.
-- `/users/new` و `/users/$id` — نموذج كامل مع رفع صورة.
-- `/profile` — صفحة الملف الشخصي (صورة، تغيير كلمة مرور، سجل نشاطاتي).
+**Server Functions:**
+- `runMonthlyPayroll(month, year, branch_id?)` — يحسب الرواتب لكل الموظفين النشطين ويُنشئ `payroll_run` + `payroll_items`.
+- `approvePayroll(id)` / `markPayrollPaid(id)`.
+- `approveLeaveRequest(id)` / `rejectLeaveRequest(id, reason)`.
 
----
+**الواجهات (6 صفحات جديدة):**
+- `/hr/employees` — قائمة موظفين مع فلترة بالفرع/الحالة، بطاقات احترافية.
+- `/hr/employees/$id` — ملف الموظف الكامل: بيانات، عقد، حضور، إجازات، مكافآت/حسميات، تاريخ الرواتب.
+- `/hr/leaves` — طلبات الإجازات (كل الموظفين للمدير، الخاصة للموظف) مع الموافقة/الرفض.
+- `/hr/attendance` — سجل الحضور اليومي + تسجيل يدوي.
+- `/hr/bonuses-deductions` — إدارة المكافآت والحسميات.
+- `/hr/payroll` — إنشاء دورة رواتب شهرية، مراجعة، اعتماد، طباعة قسائم راتب PDF.
 
-## المرحلة 3 — كتالوجات الفروع/الأقسام/المنتجات + Storage للصور
-
-> ✅ **تم التنفيذ**
-> - Migration توسّع branches (image, description, working_hours, manager_id) و categories (image, description, is_active) و products (description, barcode, discount, gallery, ingredients, size, addons) و suppliers (logo_url).
-> - جدول `customers` جديد + سياسات RLS + GRANT + trigger updated_at.
-> - `ImageUploader` مشترك يستخدم bucket `restaurant-assets` عبر signed URLs (سنة).
-> - صفحات محدَّثة: /branches (صورة، وصف، وقت الفتح/الإغلاق، مدير الفرع)، /categories (صورة، وصف، حالة)، /suppliers (شعار)، /customers (جديدة كليًا) — مضافة للسايدبار.
-
-### قاعدة البيانات
-- توسيع `branches`: `image_url`, `logo_url`, `description`, `working_hours` (jsonb), `manager_id`, `is_active`.
-- توسيع `categories`: `image_url`, `description`, `sort_order`, `icon`, `is_active`.
-- توسيع `products`: `image_url`, `gallery_urls` (text[]), `cost_price` (موجود؟)، `discount`, `ingredients` (text[]), `size`, `addons` (jsonb), `barcode`, `is_active`.
-- جدول `customers` جديد: `name`, `phone`, `avatar_url`, `notes`, `tenant_id` + سياسات RLS + GRANT.
-- توسيع `suppliers`: `logo_url`.
-
-### Storage
-استخدام bucket `restaurant-assets` الموجود (private):
-- مجلدات: `avatars/`, `products/`, `categories/`, `branches/`, `suppliers/`, `customers/`.
-- سياسات `storage.objects`: القراءة للمستخدمين المصادَق عليهم داخل نفس tenant، الرفع للأدوار المناسبة.
-- Server function `getSignedUrl` لعرض الصور عبر signed URLs.
-
-### الواجهات
-- `/branches` (تحديث) — بطاقات مع صور، محرر ساعات العمل، تعيين مدير.
-- `/categories` (تحديث) — عرض شبكي بأيقونات وصور، سحب-وإفلات للترتيب.
-- `/products` (تحديث) — بطاقات احترافية، معرض صور، إضافات ومكونات.
-- `/customers` — جديد بالكامل.
-- `/suppliers` (تحديث) — إضافة صورة وربط بالفواتير.
+**السايدبار:** مجموعة جديدة "الموارد البشرية" تضم الروابط أعلاه.
 
 ---
 
-## المرحلة 4 — Audit Log + Dashboard المالك
+### المحور 2 — إعادة بناء صفحة نقطة البيع (POS)
 
-> ✅ **تم التنفيذ**
-> - جدول `audit_logs` + سياسات RLS (Super Owner يرى الكل، Owner/Manager يرى مطعمه) + GRANT.
-> - Trigger عام `log_audit_change()` مُطبَّق على 10 جداول حساسة (products, branches, categories, suppliers, customers, expenses, purchases, sales, user_roles, tenants).
-> - صفحة `/audit-logs` مع فلترة (نوع/إجراء/بحث نصي) وعرض الفروقات (before/after) قابل للطي، مع أسماء المستخدمين.
-> - إضافة رابط "سجل التدقيق" للسايدبار (للجميع؛ الوصول يُتحكَّم به عبر RLS + شرط داخل الصفحة).
-> - Dashboard: كارت "Super Owner Overview" يظهر فقط لـ Super Owner (مطاعم، فروع، مستخدمون، مبيعات الشهر، مصروفات الشهر عبر كل الـ tenants).
+Layout جديد ثلاثي احترافي (مستوحى من Toast/Square/Lightspeed):
 
-### قاعدة البيانات
-- جدول `audit_logs`: `tenant_id`, `user_id`, `action`, `entity_type`, `entity_id`, `changes` (jsonb — before/after)، `ip_address`, `created_at`.
-- Trigger عام `log_changes()` يُطبَّق على الجداول الحساسة (products, users, sales, expenses, purchases, branches).
-- View `dashboard_owner_stats` تجمع KPIs (فروع، مستخدمون، مبيعات، أرباح، مصروفات، top products).
+```
+┌─────────────────────────────────────────────────────────┐
+│  Header: الفرع • الكاشير • جلسة الصندوق • بحث           │
+├──────────────┬────────────────────────┬─────────────────┤
+│              │                        │                 │
+│  الأقسام     │   منتجات القسم         │   الفاتورة      │
+│  (Grid       │   (Grid بطاقات         │   (Cart بنود    │
+│   عمودي      │    بصور، سعر،          │    مع + / -     │
+│   بأيقونات)  │    مخزون)              │    زر حذف       │
+│              │                        │    خصم/ضريبة    │
+│  22%         │   48%                  │    30%          │
+│              │                        │                 │
+│              │                        │  زر دفع كبير    │
+└──────────────┴────────────────────────┴─────────────────┘
+```
 
-### الواجهات
-- `/audit-logs` — سجل قابل للفلترة (مستخدم، نوع، تاريخ).
-- `/dashboard` (إعادة بناء لـ Super Owner) — نظرة شاملة على كل الفروع + رسوم Recharts.
-
----
-
-## المرحلة 5 — البيانات التجريبية (Demo Data) + فحص جاهزية
-
-> ✅ **تم التنفيذ (جزئي — بدون مستخدمين تجريبيين)**
-> - Server function `seedDemoData(tenant_id)` تضيف 3 فروع + 8 أقسام + 23 منتج + 10 عملاء + 5 موردين للمطعم الحالي (بدون تكرار).
-> - زر "بيانات تجريبية" في `/admin` (تبويب جديد).
-> - المستخدمون التجريبيون: يُنشَؤون يدوياً من `/users` بدلاً من migration لتفادي كلمات مرور مكشوفة.
->
-> ### نظام صلاحيات هرمي جديد
-> - جدول `user_permission_overrides` + عمود `hired_by` على `user_roles` و `profiles`.
-> - `has_permission()` محدَّثة لتُعطي الأولوية للـ overrides ثم الافتراضي للدور.
-> - سياسات RLS دقيقة:
->   * المالك الرئيسي: يعدّل كل شيء.
->   * المالك: يعدّل صلاحيات المديرين ومَن وظّفهم بنفسه، ويرى صلاحيات موظفي المدير (عرض فقط).
->   * المدير: يعدّل صلاحيات مَن وظّفه هو فقط في فرعه.
->   * لا يقدر مدير على رؤية أو تعديل صلاحيات فرع آخر.
-> - صفحة جديدة `/team-permissions`: قائمة فريقك + مصفوفة صلاحيات مع علامة "مخصّص" و"عرض فقط".
-> - `createUser` أصبح يسجّل `hired_by = context.userId` تلقائياً.
-
-### Migration واحدة للبيانات
-- 3 فروع (رئيسي، المدينة، المطار) بصور من Unsplash/Pexels URLs.
-- 8 أقسام مع أيقونات ووصف.
-- ~25 منتج موزَّع على الأقسام مع صور.
-- 5 مستخدمين تجريبيين (Owner/Manager/Cashier/Accountant/Warehouse) بكلمات مرور افتراضية.
-- 10 عملاء + 5 موردين.
-- كميات مخزون افتراضية + حركات دخول/خروج.
-- ~20 فاتورة مبيعات على آخر 30 يوماً بطرق دفع متنوعة (لتغذية الرسوم).
-
-### تقرير الجاهزية النهائي
-- فحص أمني عبر `security--run_security_scan`.
-- تحقق من RLS على كل جدول جديد.
-- اختبار Playwright: تسجيل دخول بكل دور، رفع صورة، عملية بيع كاملة، عرض التقارير.
-- تقرير مكتوب: ما تم/ما تبقى/ملاحظات أمنية.
+- **قسم الأقسام (يمين/يسار):** بطاقات كبيرة قابلة للنقر بأيقونة + اسم؛ اختيار قسم يُصفّي المنتجات.
+- **قسم المنتجات (وسط):** شبكة بطاقات (صورة، اسم، سعر، شارة مخزون)؛ نقر يضيف للفاتورة؛ بحث نصي علوي.
+- **قسم الفاتورة (يسار/يمين):** جدول احترافي (الاسم + الكمية بأزرار +/- + السعر + الإجمالي + زر حذف 🗑️)؛ ملخّص أسفل (الفرعي، الخصم، الضريبة، الإجمالي)؛ اختيار طريقة الدفع؛ زر "إتمام البيع" بارز.
+- تصميم موبايل: تبويبات (Categories / Products / Cart) بنقرة واحدة.
+- كل الأزرار بألوان دلالية من design tokens (بدون hardcoded colors).
 
 ---
 
-## تنبيهات مهمة
+### المحور 3 — الفحص الشامل النهائي
 
-- **الحجم:** كل مرحلة قد تتجاوز حدود الجلسة الواحدة. سأنفّذ مرحلة كاملة ثم أتوقف لك للاختبار قبل التالية.
-- **الحفاظ على الحالي:** لن أُسقط أي جدول أو سياسة موجودة؛ فقط `ALTER` و `CREATE`.
-- **Super Owner:** سيتم تعيينه بأول migration للمستخدم الذي تحدّده (أو أول مستخدم موجود في `profiles`).
-- **الصور التجريبية:** روابط خارجية مجانية (Unsplash) بدل رفعها فعلياً لتوفير الوقت؛ يمكن استبدالها لاحقاً.
+1. **`supabase--linter`** — فحص RLS و search_path لكل الدوال الجديدة.
+2. **`security--run_security_scan`** — فحص أمني كامل.
+3. **`tsgo`** — فحص TypeScript.
+4. **Playwright end-to-end:**
+   - تسجيل دخول → إنشاء موظف → طلب إجازة → موافقة → تشغيل دورة رواتب → طباعة قسيمة.
+   - فتح POS → اختيار قسم → إضافة منتجات → تعديل كميات → حذف بند → إتمام بيع → طباعة فاتورة.
+   - screenshots في كل خطوة رئيسية للتحقق البصري.
+5. **تقرير جاهزية مكتوب** يشمل:
+   - قائمة الميزات المكتملة.
+   - أي تحذيرات أمنية متبقية (مع الشرح).
+   - خطوات التشغيل (كيف يبدأ المستخدم).
+   - قائمة "ما يمكن إضافته لاحقاً" (تحسينات مستقبلية).
 
 ---
 
-هل أبدأ بـ **المرحلة 1** الآن؟ وإن كان لديك مستخدم محدَّد ليكون Super Owner، أعطني بريده الإلكتروني.
+### التفاصيل التقنية
+
+- كل الجداول الجديدة: `tenant_id UUID NOT NULL` + `id` + `created_at` + `updated_at` + `set_updated_at` trigger + GRANTs (`authenticated` + `service_role`) + RLS.
+- سياسات RLS تعتمد على `has_role`/`has_permission`/`is_super_owner` + فحص فرع (لمنع مدير من رؤية موظفي فرع آخر).
+- Audit log trigger يُطبَّق على `employees`, `payroll_runs`, `leave_requests`, `bonuses`, `deductions`.
+- إضافة صلاحيات جديدة للـ enum: `hr.view`, `hr.manage`, `payroll.run`, `payroll.approve`, `leaves.approve`.
+- كل الأموال بـ `NUMERIC(12,2)` مع `formatMoney` من `@/lib/format`.
+- POS يبقى يستخدم نفس منطق `sales` + `sale_items` + trigger `on_sale_item_insert` الحالي — تصميم جديد فقط، لا كسر خلفي.
+
+---
+
+### تحذيرات
+
+- هذه المرحلة كبيرة (migration واحدة كبيرة + ~10 ملفات جديدة + إعادة كتابة POS). سأنفّذها على دفعة واحدة ثم أتوقف للفحص.
+- لن أحذف أي جدول أو سياسة قائمة.
+- قسائم الراتب PDF ستستخدم نفس أداة `invoice-pdf.ts` بقالب مخصص.
+- الفحص الشامل سيتم في نفس الجلسة بعد اكتمال البناء.
+
+---
+
+هل أبدأ التنفيذ؟
