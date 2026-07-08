@@ -291,24 +291,42 @@ function POSPage() {
         action={<span className="rounded-full bg-success/15 px-3 py-1 text-xs font-medium text-success">وردية مفتوحة</span>}
       />
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
+      <div className="grid gap-4 lg:grid-cols-[180px_1fr_380px]">
+        {/* Categories rail */}
+        <div className="space-y-2">
+          <button
+            type="button"
+            onClick={() => setCatFilter("all")}
+            className={`flex w-full items-center gap-2 rounded-lg border p-3 text-right text-sm transition ${
+              catFilter === "all" ? "border-primary bg-primary/10 font-semibold text-primary" : "hover:bg-muted"
+            }`}
+          >
+            <Package className="h-4 w-4" />
+            كل الأقسام
+          </button>
+          {(categories.data ?? []).map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => setCatFilter(c.id)}
+              className={`flex w-full items-center gap-2 rounded-lg border p-3 text-right text-sm transition ${
+                catFilter === c.id ? "border-primary bg-primary/10 font-semibold text-primary" : "hover:bg-muted"
+              }`}
+            >
+              <Package className="h-4 w-4 shrink-0" />
+              <span className="truncate">{c.name}</span>
+            </button>
+          ))}
+        </div>
+
         {/* Products */}
         <div className="space-y-3">
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <div className="relative flex-1">
-              <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="بحث سريع بالاسم..." className="pr-9" autoFocus />
-            </div>
-            <Select value={catFilter} onValueChange={setCatFilter}>
-              <SelectTrigger className="sm:w-48"><SelectValue placeholder="القسم" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">كل الأقسام</SelectItem>
-                {(categories.data ?? []).map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
+          <div className="relative">
+            <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="بحث سريع بالاسم..." className="pr-9" autoFocus />
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4">
             {filteredProducts.map((p) => (
               <button
                 key={p.id}
