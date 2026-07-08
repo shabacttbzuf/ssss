@@ -74,6 +74,13 @@
 
 ## المرحلة 4 — Audit Log + Dashboard المالك
 
+> ✅ **تم التنفيذ**
+> - جدول `audit_logs` + سياسات RLS (Super Owner يرى الكل، Owner/Manager يرى مطعمه) + GRANT.
+> - Trigger عام `log_audit_change()` مُطبَّق على 10 جداول حساسة (products, branches, categories, suppliers, customers, expenses, purchases, sales, user_roles, tenants).
+> - صفحة `/audit-logs` مع فلترة (نوع/إجراء/بحث نصي) وعرض الفروقات (before/after) قابل للطي، مع أسماء المستخدمين.
+> - إضافة رابط "سجل التدقيق" للسايدبار (للجميع؛ الوصول يُتحكَّم به عبر RLS + شرط داخل الصفحة).
+> - Dashboard: كارت "Super Owner Overview" يظهر فقط لـ Super Owner (مطاعم، فروع، مستخدمون، مبيعات الشهر، مصروفات الشهر عبر كل الـ tenants).
+
 ### قاعدة البيانات
 - جدول `audit_logs`: `tenant_id`, `user_id`, `action`, `entity_type`, `entity_id`, `changes` (jsonb — before/after)، `ip_address`, `created_at`.
 - Trigger عام `log_changes()` يُطبَّق على الجداول الحساسة (products, users, sales, expenses, purchases, branches).
