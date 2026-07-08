@@ -97,7 +97,7 @@ export const seedDemoData = createServerFn({ method: "POST" })
       if (existing) { productIds.push(existing.id); continue; }
       const { data: ins, error } = await supabaseAdmin.from("products").insert({
         tenant_id: tenantId, category_id: catId,
-        name: p.name, price: p.price, cost_price: p.cost_price,
+        name: p.name, sale_price: p.price, cost_price: p.cost_price,
         image_url: p.image_url, is_active: true,
       }).select("id").single();
       if (!error && ins) { productIds.push(ins.id); stats.products++; }
