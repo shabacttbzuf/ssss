@@ -24,6 +24,7 @@ import { Route as AuthenticatedPosRouteImport } from './routes/_authenticated/po
 import { Route as AuthenticatedExpensesRouteImport } from './routes/_authenticated/expenses'
 import { Route as AuthenticatedExpenseCategoriesRouteImport } from './routes/_authenticated/expense-categories'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCustomersRouteImport } from './routes/_authenticated/customers'
 import { Route as AuthenticatedCategoriesRouteImport } from './routes/_authenticated/categories'
 import { Route as AuthenticatedCashSessionsRouteImport } from './routes/_authenticated/cash-sessions'
 import { Route as AuthenticatedBranchesRouteImport } from './routes/_authenticated/branches'
@@ -108,6 +109,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCustomersRoute = AuthenticatedCustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCategoriesRoute = AuthenticatedCategoriesRouteImport.update({
   id: '/categories',
   path: '/categories',
@@ -160,6 +166,7 @@ export interface FileRoutesByFullPath {
   '/branches': typeof AuthenticatedBranchesRoute
   '/cash-sessions': typeof AuthenticatedCashSessionsRoute
   '/categories': typeof AuthenticatedCategoriesRoute
+  '/customers': typeof AuthenticatedCustomersRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/expense-categories': typeof AuthenticatedExpenseCategoriesRoute
   '/expenses': typeof AuthenticatedExpensesRoute
@@ -184,6 +191,7 @@ export interface FileRoutesByTo {
   '/branches': typeof AuthenticatedBranchesRoute
   '/cash-sessions': typeof AuthenticatedCashSessionsRoute
   '/categories': typeof AuthenticatedCategoriesRoute
+  '/customers': typeof AuthenticatedCustomersRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/expense-categories': typeof AuthenticatedExpenseCategoriesRoute
   '/expenses': typeof AuthenticatedExpensesRoute
@@ -210,6 +218,7 @@ export interface FileRoutesById {
   '/_authenticated/branches': typeof AuthenticatedBranchesRoute
   '/_authenticated/cash-sessions': typeof AuthenticatedCashSessionsRoute
   '/_authenticated/categories': typeof AuthenticatedCategoriesRoute
+  '/_authenticated/customers': typeof AuthenticatedCustomersRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/expense-categories': typeof AuthenticatedExpenseCategoriesRoute
   '/_authenticated/expenses': typeof AuthenticatedExpensesRoute
@@ -236,6 +245,7 @@ export interface FileRouteTypes {
     | '/branches'
     | '/cash-sessions'
     | '/categories'
+    | '/customers'
     | '/dashboard'
     | '/expense-categories'
     | '/expenses'
@@ -260,6 +270,7 @@ export interface FileRouteTypes {
     | '/branches'
     | '/cash-sessions'
     | '/categories'
+    | '/customers'
     | '/dashboard'
     | '/expense-categories'
     | '/expenses'
@@ -285,6 +296,7 @@ export interface FileRouteTypes {
     | '/_authenticated/branches'
     | '/_authenticated/cash-sessions'
     | '/_authenticated/categories'
+    | '/_authenticated/customers'
     | '/_authenticated/dashboard'
     | '/_authenticated/expense-categories'
     | '/_authenticated/expenses'
@@ -416,6 +428,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/customers': {
+      id: '/_authenticated/customers'
+      path: '/customers'
+      fullPath: '/customers'
+      preLoaderRoute: typeof AuthenticatedCustomersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/categories': {
       id: '/_authenticated/categories'
       path: '/categories'
@@ -480,6 +499,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBranchesRoute: typeof AuthenticatedBranchesRoute
   AuthenticatedCashSessionsRoute: typeof AuthenticatedCashSessionsRoute
   AuthenticatedCategoriesRoute: typeof AuthenticatedCategoriesRoute
+  AuthenticatedCustomersRoute: typeof AuthenticatedCustomersRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedExpenseCategoriesRoute: typeof AuthenticatedExpenseCategoriesRoute
   AuthenticatedExpensesRoute: typeof AuthenticatedExpensesRoute
@@ -502,6 +522,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBranchesRoute: AuthenticatedBranchesRoute,
   AuthenticatedCashSessionsRoute: AuthenticatedCashSessionsRoute,
   AuthenticatedCategoriesRoute: AuthenticatedCategoriesRoute,
+  AuthenticatedCustomersRoute: AuthenticatedCustomersRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedExpenseCategoriesRoute: AuthenticatedExpenseCategoriesRoute,
   AuthenticatedExpensesRoute: AuthenticatedExpensesRoute,
@@ -531,13 +552,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

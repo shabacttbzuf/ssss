@@ -5,6 +5,7 @@ import {
   Package,
   Tags,
   Users,
+  UserSquare2,
   Settings,
   ChefHat,
   ShoppingCart,
@@ -50,6 +51,7 @@ const groups: Group[] = [
       { title: "نقطة البيع", url: "/pos", icon: ShoppingCart },
       { title: "الفواتير", url: "/sales", icon: Receipt },
       { title: "الورديات", url: "/cash-sessions", icon: Wallet },
+      { title: "العملاء", url: "/customers", icon: UserSquare2 },
     ],
   },
   {

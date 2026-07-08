@@ -9,10 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Edit, Trash2, Building2, Loader2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Plus, Edit, Trash2, Building2, Loader2, Clock, User as UserIcon } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { PageHeader } from "@/components/page-header";
+import { ImageUploader } from "@/components/image-uploader";
 
 export const Route = createFileRoute("/_authenticated/branches")({
   component: BranchesPage,
@@ -27,8 +30,14 @@ type Branch = {
   tax_number: string | null;
   currency: string;
   logo_url: string | null;
+  image_url: string | null;
+  description: string | null;
+  working_hours: { open?: string; close?: string } | null;
+  manager_id: string | null;
   is_active: boolean;
 };
+
+type ProfileLite = { id: string; full_name: string | null };
 
 const schema = z.object({
   name: z.string().trim().min(2, "الاسم قصير").max(100),
@@ -37,6 +46,11 @@ const schema = z.object({
   tax_number: z.string().trim().max(50).optional().or(z.literal("")),
   currency: z.string().trim().min(1).max(5),
   is_active: z.boolean(),
+  description: z.string().trim().max(500).optional().or(z.literal("")),
+  image_url: z.string().url().nullable().optional(),
+  manager_id: z.string().uuid().nullable(),
+  open_time: z.string().max(10).optional().or(z.literal("")),
+  close_time: z.string().max(10).optional().or(z.literal("")),
 });
 
 function BranchesPage() {
@@ -59,13 +73,33 @@ function BranchesPage() {
     enabled: !!tenantId,
   });
 
+  const managers = useQuery({
+    queryKey: ["tenant-profiles", tenantId],
+    queryFn: async (): Promise<ProfileLite[]> => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .order("full_name");
+      if (error) throw error;
+      return (data ?? []) as ProfileLite[];
+    },
+    enabled: !!tenantId && isAdmin,
+  });
+  const managerMap = new Map((managers.data ?? []).map((p) => [p.id, p.full_name ?? "—"]));
+
   const upsert = useMutation({
     mutationFn: async (input: z.infer<typeof schema>) => {
+      const { open_time, close_time, ...rest } = input;
+      const working_hours = open_time || close_time ? { open: open_time || null, close: close_time || null } : null;
       const payload = {
-        ...input,
-        address: input.address || null,
-        phone: input.phone || null,
-        tax_number: input.tax_number || null,
+        ...rest,
+        address: rest.address || null,
+        phone: rest.phone || null,
+        tax_number: rest.tax_number || null,
+        description: rest.description || null,
+        image_url: rest.image_url ?? null,
+        manager_id: rest.manager_id,
+        working_hours,
         tenant_id: tenantId!,
       };
       if (editing) {
@@ -110,6 +144,8 @@ function BranchesPage() {
               </DialogTrigger>
               <BranchDialog
                 initial={editing}
+                tenantId={tenantId!}
+                managers={managers.data ?? []}
                 onSubmit={(v) => upsert.mutate(v)}
                 pending={upsert.isPending}
               />
@@ -126,6 +162,11 @@ function BranchesPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {branches.map((b) => (
             <Card key={b.id} className="overflow-hidden">
+              {b.image_url && (
+                <div className="aspect-video w-full overflow-hidden bg-muted">
+                  <img src={b.image_url} alt={b.name} className="h-full w-full object-cover" />
+                </div>
+              )}
               <CardContent className="p-5">
                 <div className="mb-3 flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2">
@@ -145,10 +186,17 @@ function BranchesPage() {
                     {b.is_active ? "نشط" : "متوقف"}
                   </span>
                 </div>
+                {b.description && <p className="mb-2 text-sm text-muted-foreground line-clamp-2">{b.description}</p>}
                 <div className="space-y-1 text-sm text-muted-foreground">
                   {b.address && <div>📍 {b.address}</div>}
                   {b.phone && <div dir="ltr">📞 {b.phone}</div>}
                   {b.tax_number && <div>الرقم الضريبي: <span dir="ltr">{b.tax_number}</span></div>}
+                  {b.working_hours && (b.working_hours.open || b.working_hours.close) && (
+                    <div className="flex items-center gap-1"><Clock className="h-3 w-3" /><span dir="ltr">{b.working_hours.open ?? "—"} - {b.working_hours.close ?? "—"}</span></div>
+                  )}
+                  {b.manager_id && (
+                    <div className="flex items-center gap-1"><UserIcon className="h-3 w-3" />{managerMap.get(b.manager_id) ?? "—"}</div>
+                  )}
                 </div>
                 {isAdmin && (
                   <div className="mt-4 flex gap-2 border-t pt-3">
@@ -195,10 +243,14 @@ function EmptyState({ onAdd }: { onAdd?: () => void }) {
 
 function BranchDialog({
   initial,
+  tenantId,
+  managers,
   onSubmit,
   pending,
 }: {
   initial: Branch | null;
+  tenantId: string;
+  managers: ProfileLite[];
   onSubmit: (v: z.infer<typeof schema>) => void;
   pending: boolean;
 }) {
@@ -208,9 +260,14 @@ function BranchDialog({
   const [tax, setTax] = useState(initial?.tax_number ?? "");
   const [currency, setCurrency] = useState(initial?.currency ?? "SAR");
   const [active, setActive] = useState(initial?.is_active ?? true);
+  const [description, setDescription] = useState(initial?.description ?? "");
+  const [imageUrl, setImageUrl] = useState<string | null>(initial?.image_url ?? null);
+  const [managerId, setManagerId] = useState<string>(initial?.manager_id ?? "none");
+  const [openTime, setOpenTime] = useState(initial?.working_hours?.open ?? "");
+  const [closeTime, setCloseTime] = useState(initial?.working_hours?.close ?? "");
 
   return (
-    <DialogContent>
+    <DialogContent className="max-h-[90vh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle>{initial ? "تعديل فرع" : "إضافة فرع جديد"}</DialogTitle>
       </DialogHeader>
@@ -225,6 +282,11 @@ function BranchDialog({
               tax_number: tax,
               currency,
               is_active: active,
+              description,
+              image_url: imageUrl,
+              manager_id: managerId === "none" ? null : managerId,
+              open_time: openTime,
+              close_time: closeTime,
             });
             onSubmit(parsed);
           } catch (err) {
@@ -233,9 +295,14 @@ function BranchDialog({
         }}
         className="space-y-4"
       >
+        <ImageUploader tenantId={tenantId} folder="branches" value={imageUrl} onChange={setImageUrl} aspect="wide" />
         <div className="space-y-2">
           <Label htmlFor="b-name">اسم الفرع</Label>
           <Input id="b-name" value={name} onChange={(e) => setName(e.target.value)} required />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="b-desc">وصف قصير</Label>
+          <Textarea id="b-desc" value={description} onChange={(e) => setDescription(e.target.value)} rows={2} />
         </div>
         <div className="space-y-2">
           <Label htmlFor="b-address">العنوان</Label>
@@ -254,6 +321,26 @@ function BranchDialog({
         <div className="space-y-2">
           <Label htmlFor="b-tax">الرقم الضريبي</Label>
           <Input id="b-tax" dir="ltr" value={tax} onChange={(e) => setTax(e.target.value)} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <Label htmlFor="b-open">وقت الفتح</Label>
+            <Input id="b-open" type="time" dir="ltr" value={openTime} onChange={(e) => setOpenTime(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="b-close">وقت الإغلاق</Label>
+            <Input id="b-close" type="time" dir="ltr" value={closeTime} onChange={(e) => setCloseTime(e.target.value)} />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label>مدير الفرع</Label>
+          <Select value={managerId} onValueChange={setManagerId}>
+            <SelectTrigger><SelectValue placeholder="بدون مدير" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">بدون مدير</SelectItem>
+              {managers.map((m) => <SelectItem key={m.id} value={m.id}>{m.full_name ?? "—"}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </div>
         <div className="flex items-center justify-between rounded-lg border p-3">
           <Label htmlFor="b-active">الفرع نشط</Label>

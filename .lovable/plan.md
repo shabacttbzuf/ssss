@@ -44,6 +44,12 @@
 
 ## المرحلة 3 — كتالوجات الفروع/الأقسام/المنتجات + Storage للصور
 
+> ✅ **تم التنفيذ**
+> - Migration توسّع branches (image, description, working_hours, manager_id) و categories (image, description, is_active) و products (description, barcode, discount, gallery, ingredients, size, addons) و suppliers (logo_url).
+> - جدول `customers` جديد + سياسات RLS + GRANT + trigger updated_at.
+> - `ImageUploader` مشترك يستخدم bucket `restaurant-assets` عبر signed URLs (سنة).
+> - صفحات محدَّثة: /branches (صورة، وصف، وقت الفتح/الإغلاق، مدير الفرع)، /categories (صورة، وصف، حالة)، /suppliers (شعار)، /customers (جديدة كليًا) — مضافة للسايدبار.
+
 ### قاعدة البيانات
 - توسيع `branches`: `image_url`, `logo_url`, `description`, `working_hours` (jsonb), `manager_id`, `is_active`.
 - توسيع `categories`: `image_url`, `description`, `sort_order`, `icon`, `is_active`.
