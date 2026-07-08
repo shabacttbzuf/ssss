@@ -35,6 +35,7 @@ import { Route as AuthenticatedSalesIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedInventoryIndexRouteImport } from './routes/_authenticated/inventory.index'
 import { Route as AuthenticatedSalesIdRouteImport } from './routes/_authenticated/sales.$id'
 import { Route as AuthenticatedInventoryMovementsRouteImport } from './routes/_authenticated/inventory.movements'
+import { Route as AuthenticatedHrEmployeesRouteImport } from './routes/_authenticated/hr.employees'
 
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
@@ -170,6 +171,12 @@ const AuthenticatedInventoryMovementsRoute =
     path: '/inventory/movements',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedHrEmployeesRoute =
+  AuthenticatedHrEmployeesRouteImport.update({
+    id: '/hr/employees',
+    path: '/hr/employees',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -193,6 +200,7 @@ export interface FileRoutesByFullPath {
   '/suppliers': typeof AuthenticatedSuppliersRoute
   '/team-permissions': typeof AuthenticatedTeamPermissionsRoute
   '/users': typeof AuthenticatedUsersRoute
+  '/hr/employees': typeof AuthenticatedHrEmployeesRoute
   '/inventory/movements': typeof AuthenticatedInventoryMovementsRoute
   '/sales/$id': typeof AuthenticatedSalesIdRoute
   '/inventory/': typeof AuthenticatedInventoryIndexRoute
@@ -220,6 +228,7 @@ export interface FileRoutesByTo {
   '/suppliers': typeof AuthenticatedSuppliersRoute
   '/team-permissions': typeof AuthenticatedTeamPermissionsRoute
   '/users': typeof AuthenticatedUsersRoute
+  '/hr/employees': typeof AuthenticatedHrEmployeesRoute
   '/inventory/movements': typeof AuthenticatedInventoryMovementsRoute
   '/sales/$id': typeof AuthenticatedSalesIdRoute
   '/inventory': typeof AuthenticatedInventoryIndexRoute
@@ -249,6 +258,7 @@ export interface FileRoutesById {
   '/_authenticated/suppliers': typeof AuthenticatedSuppliersRoute
   '/_authenticated/team-permissions': typeof AuthenticatedTeamPermissionsRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
+  '/_authenticated/hr/employees': typeof AuthenticatedHrEmployeesRoute
   '/_authenticated/inventory/movements': typeof AuthenticatedInventoryMovementsRoute
   '/_authenticated/sales/$id': typeof AuthenticatedSalesIdRoute
   '/_authenticated/inventory/': typeof AuthenticatedInventoryIndexRoute
@@ -278,6 +288,7 @@ export interface FileRouteTypes {
     | '/suppliers'
     | '/team-permissions'
     | '/users'
+    | '/hr/employees'
     | '/inventory/movements'
     | '/sales/$id'
     | '/inventory/'
@@ -305,6 +316,7 @@ export interface FileRouteTypes {
     | '/suppliers'
     | '/team-permissions'
     | '/users'
+    | '/hr/employees'
     | '/inventory/movements'
     | '/sales/$id'
     | '/inventory'
@@ -333,6 +345,7 @@ export interface FileRouteTypes {
     | '/_authenticated/suppliers'
     | '/_authenticated/team-permissions'
     | '/_authenticated/users'
+    | '/_authenticated/hr/employees'
     | '/_authenticated/inventory/movements'
     | '/_authenticated/sales/$id'
     | '/_authenticated/inventory/'
@@ -530,6 +543,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInventoryMovementsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/hr/employees': {
+      id: '/_authenticated/hr/employees'
+      path: '/hr/employees'
+      fullPath: '/hr/employees'
+      preLoaderRoute: typeof AuthenticatedHrEmployeesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -552,6 +572,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSuppliersRoute: typeof AuthenticatedSuppliersRoute
   AuthenticatedTeamPermissionsRoute: typeof AuthenticatedTeamPermissionsRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
+  AuthenticatedHrEmployeesRoute: typeof AuthenticatedHrEmployeesRoute
   AuthenticatedInventoryMovementsRoute: typeof AuthenticatedInventoryMovementsRoute
   AuthenticatedSalesIdRoute: typeof AuthenticatedSalesIdRoute
   AuthenticatedInventoryIndexRoute: typeof AuthenticatedInventoryIndexRoute
@@ -577,6 +598,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSuppliersRoute: AuthenticatedSuppliersRoute,
   AuthenticatedTeamPermissionsRoute: AuthenticatedTeamPermissionsRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
+  AuthenticatedHrEmployeesRoute: AuthenticatedHrEmployeesRoute,
   AuthenticatedInventoryMovementsRoute: AuthenticatedInventoryMovementsRoute,
   AuthenticatedSalesIdRoute: AuthenticatedSalesIdRoute,
   AuthenticatedInventoryIndexRoute: AuthenticatedInventoryIndexRoute,
