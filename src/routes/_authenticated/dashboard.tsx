@@ -2,9 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveTenant } from "@/hooks/use-active-tenant";
+import { useSuperOwner } from "@/hooks/use-super-owner";
 import { Card, CardContent } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell, Legend } from "recharts";
-import { Loader2, TrendingUp, TrendingDown, Receipt, Wallet, Package } from "lucide-react";
+import { Loader2, TrendingUp, TrendingDown, Receipt, Wallet, Package, Crown, Building2, Users as UsersIcon } from "lucide-react";
 import { formatMoney } from "@/lib/format";
 import { PageHeader } from "@/components/page-header";
 
@@ -12,6 +13,31 @@ export const Route = createFileRoute("/_authenticated/dashboard")({ component: D
 
 function Dashboard() {
   const { tenantId, tenant, user } = useActiveTenant();
+  const { isSuperOwner } = useSuperOwner();
+
+  const superStats = useQuery({
+    queryKey: ["super-owner-stats"],
+    queryFn: async () => {
+      const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+      const [tenants, branches, users, sales, expenses] = await Promise.all([
+        supabase.from("tenants").select("id", { count: "exact", head: true }),
+        supabase.from("branches").select("id", { count: "exact", head: true }),
+        supabase.from("profiles").select("id", { count: "exact", head: true }),
+        supabase.from("sales").select("total").gte("created_at", startOfMonth),
+        supabase.from("expenses").select("amount").gte("paid_at", startOfMonth.slice(0, 10)),
+      ]);
+      const salesTotal = (sales.data ?? []).reduce((s, r) => s + Number((r as { total: number }).total), 0);
+      const expTotal = (expenses.data ?? []).reduce((s, r) => s + Number((r as { amount: number }).amount), 0);
+      return {
+        tenantsCount: tenants.count ?? 0,
+        branchesCount: branches.count ?? 0,
+        usersCount: users.count ?? 0,
+        salesTotal,
+        expTotal,
+      };
+    },
+    enabled: isSuperOwner,
+  });
 
   const stats = useQuery({
     queryKey: ["dashboard-stats", tenantId],
@@ -85,6 +111,23 @@ function Dashboard() {
   return (
     <div className="space-y-6">
       <PageHeader title={`أهلاً، ${user?.email ?? ""}`} subtitle={tenant?.name} />
+
+      {isSuperOwner && superStats.data && (
+        <Card className="border-primary/40 bg-primary/5">
+          <CardContent className="p-4">
+            <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-primary">
+              <Crown className="h-4 w-4" /> نظرة عامة على المنظومة (Super Owner)
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+              <MiniStat label="مطاعم" value={superStats.data.tenantsCount} icon={<Building2 className="h-4 w-4" />} />
+              <MiniStat label="فروع" value={superStats.data.branchesCount} icon={<Building2 className="h-4 w-4" />} />
+              <MiniStat label="مستخدمون" value={superStats.data.usersCount} icon={<UsersIcon className="h-4 w-4" />} />
+              <MiniStat label="مبيعات الشهر" value={Math.round(superStats.data.salesTotal)} icon={<TrendingUp className="h-4 w-4" />} />
+              <MiniStat label="مصروفات الشهر" value={Math.round(superStats.data.expTotal)} icon={<TrendingDown className="h-4 w-4" />} />
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {stats.isLoading || !stats.data ? (
         <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
