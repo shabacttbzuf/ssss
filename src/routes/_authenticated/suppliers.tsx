@@ -13,6 +13,7 @@ import { Plus, Edit, Trash2, Truck, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { PageHeader } from "@/components/page-header";
+import { ImageUploader } from "@/components/image-uploader";
 
 export const Route = createFileRoute("/_authenticated/suppliers")({
   component: SuppliersPage,
@@ -21,7 +22,7 @@ export const Route = createFileRoute("/_authenticated/suppliers")({
 type Supplier = {
   id: string; tenant_id: string; name: string;
   phone: string | null; email: string | null; address: string | null;
-  notes: string | null; is_active: boolean;
+  notes: string | null; is_active: boolean; logo_url: string | null;
 };
 
 const schema = z.object({
@@ -30,6 +31,7 @@ const schema = z.object({
   email: z.string().trim().email("بريد غير صالح").max(120).optional().or(z.literal("")),
   address: z.string().trim().max(255).optional().or(z.literal("")),
   notes: z.string().trim().max(1000).optional().or(z.literal("")),
+  logo_url: z.string().url().nullable().optional(),
 });
 
 function SuppliersPage() {
@@ -54,6 +56,7 @@ function SuppliersPage() {
         ...v,
         phone: v.phone || null, email: v.email || null,
         address: v.address || null, notes: v.notes || null,
+        logo_url: v.logo_url ?? null,
         tenant_id: tenantId!,
       };
       if (editing) {
@@ -87,7 +90,7 @@ function SuppliersPage() {
         action={isAdmin && (
           <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditing(null); }}>
             <DialogTrigger asChild><Button><Plus className="ml-2 h-4 w-4" />مورد جديد</Button></DialogTrigger>
-            <SupplierDialog initial={editing} onSubmit={(v) => upsert.mutate(v)} pending={upsert.isPending} />
+            <SupplierDialog initial={editing} tenantId={tenantId!} onSubmit={(v) => upsert.mutate(v)} pending={upsert.isPending} />
           </Dialog>
         )}
       />
@@ -106,7 +109,11 @@ function SuppliersPage() {
               <CardContent className="p-4">
                 <div className="mb-2 flex items-start justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="grid h-10 w-10 place-items-center rounded-lg bg-accent/20 text-accent-foreground"><Truck className="h-5 w-5" /></div>
+                    {s.logo_url ? (
+                      <img src={s.logo_url} alt={s.name} className="h-10 w-10 rounded-lg object-cover" />
+                    ) : (
+                      <div className="grid h-10 w-10 place-items-center rounded-lg bg-accent/20 text-accent-foreground"><Truck className="h-5 w-5" /></div>
+                    )}
                     <div>
                       <div className="font-semibold">{s.name}</div>
                       {s.phone && <div className="text-xs text-muted-foreground" dir="ltr">{s.phone}</div>}
@@ -136,23 +143,25 @@ function SuppliersPage() {
   );
 }
 
-function SupplierDialog({ initial, onSubmit, pending }: {
-  initial: Supplier | null; onSubmit: (v: z.infer<typeof schema>) => void; pending: boolean;
+function SupplierDialog({ initial, tenantId, onSubmit, pending }: {
+  initial: Supplier | null; tenantId: string; onSubmit: (v: z.infer<typeof schema>) => void; pending: boolean;
 }) {
   const [name, setName] = useState(initial?.name ?? "");
   const [phone, setPhone] = useState(initial?.phone ?? "");
   const [email, setEmail] = useState(initial?.email ?? "");
   const [address, setAddress] = useState(initial?.address ?? "");
   const [notes, setNotes] = useState(initial?.notes ?? "");
+  const [logoUrl, setLogoUrl] = useState<string | null>(initial?.logo_url ?? null);
 
   return (
-    <DialogContent>
+    <DialogContent className="max-h-[90vh] overflow-y-auto">
       <DialogHeader><DialogTitle>{initial ? "تعديل مورد" : "مورد جديد"}</DialogTitle></DialogHeader>
       <form className="space-y-3" onSubmit={(e) => {
         e.preventDefault();
-        try { onSubmit(schema.parse({ name, phone, email, address, notes })); }
+        try { onSubmit(schema.parse({ name, phone, email, address, notes, logo_url: logoUrl })); }
         catch (err) { if (err instanceof z.ZodError) toast.error(err.issues[0].message); }
       }}>
+        <ImageUploader tenantId={tenantId} folder="suppliers" value={logoUrl} onChange={setLogoUrl} label="الشعار" />
         <div className="space-y-2"><Label>الاسم</Label><Input value={name} onChange={(e) => setName(e.target.value)} required /></div>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-2"><Label>الهاتف</Label><Input dir="ltr" value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
