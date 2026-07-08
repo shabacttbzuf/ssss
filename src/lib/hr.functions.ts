@@ -35,14 +35,14 @@ export const runMonthlyPayroll = createServerFn({ method: "POST" })
     const supabase = context.supabase;
 
     // Reject if a run already exists
-    const { data: existing } = await supabase
+    let existQ = supabase
       .from("payroll_runs")
       .select("id")
       .eq("tenant_id", data.tenant_id)
       .eq("period_year", data.year)
-      .eq("period_month", data.month)
-      .is("branch_id", data.branch_id ?? null)
-      .maybeSingle();
+      .eq("period_month", data.month);
+    existQ = data.branch_id ? existQ.eq("branch_id", data.branch_id) : existQ.is("branch_id", null);
+    const { data: existing } = await existQ.maybeSingle();
     if (existing) throw new Error("دورة الرواتب لهذا الشهر موجودة مسبقاً");
 
     // Fetch active employees
