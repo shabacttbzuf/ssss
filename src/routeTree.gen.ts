@@ -35,6 +35,7 @@ import { Route as AuthenticatedSalesIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedInventoryIndexRouteImport } from './routes/_authenticated/inventory.index'
 import { Route as AuthenticatedSalesIdRouteImport } from './routes/_authenticated/sales.$id'
 import { Route as AuthenticatedInventoryMovementsRouteImport } from './routes/_authenticated/inventory.movements'
+import { Route as AuthenticatedHrPayrollRouteImport } from './routes/_authenticated/hr.payroll'
 import { Route as AuthenticatedHrLeavesRouteImport } from './routes/_authenticated/hr.leaves'
 import { Route as AuthenticatedHrEmployeesRouteImport } from './routes/_authenticated/hr.employees'
 import { Route as AuthenticatedHrCompensationRouteImport } from './routes/_authenticated/hr.compensation'
@@ -174,6 +175,11 @@ const AuthenticatedInventoryMovementsRoute =
     path: '/inventory/movements',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedHrPayrollRoute = AuthenticatedHrPayrollRouteImport.update({
+  id: '/hr/payroll',
+  path: '/hr/payroll',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedHrLeavesRoute = AuthenticatedHrLeavesRouteImport.update({
   id: '/hr/leaves',
   path: '/hr/leaves',
@@ -224,6 +230,7 @@ export interface FileRoutesByFullPath {
   '/hr/compensation': typeof AuthenticatedHrCompensationRoute
   '/hr/employees': typeof AuthenticatedHrEmployeesRoute
   '/hr/leaves': typeof AuthenticatedHrLeavesRoute
+  '/hr/payroll': typeof AuthenticatedHrPayrollRoute
   '/inventory/movements': typeof AuthenticatedInventoryMovementsRoute
   '/sales/$id': typeof AuthenticatedSalesIdRoute
   '/inventory/': typeof AuthenticatedInventoryIndexRoute
@@ -255,6 +262,7 @@ export interface FileRoutesByTo {
   '/hr/compensation': typeof AuthenticatedHrCompensationRoute
   '/hr/employees': typeof AuthenticatedHrEmployeesRoute
   '/hr/leaves': typeof AuthenticatedHrLeavesRoute
+  '/hr/payroll': typeof AuthenticatedHrPayrollRoute
   '/inventory/movements': typeof AuthenticatedInventoryMovementsRoute
   '/sales/$id': typeof AuthenticatedSalesIdRoute
   '/inventory': typeof AuthenticatedInventoryIndexRoute
@@ -288,6 +296,7 @@ export interface FileRoutesById {
   '/_authenticated/hr/compensation': typeof AuthenticatedHrCompensationRoute
   '/_authenticated/hr/employees': typeof AuthenticatedHrEmployeesRoute
   '/_authenticated/hr/leaves': typeof AuthenticatedHrLeavesRoute
+  '/_authenticated/hr/payroll': typeof AuthenticatedHrPayrollRoute
   '/_authenticated/inventory/movements': typeof AuthenticatedInventoryMovementsRoute
   '/_authenticated/sales/$id': typeof AuthenticatedSalesIdRoute
   '/_authenticated/inventory/': typeof AuthenticatedInventoryIndexRoute
@@ -321,6 +330,7 @@ export interface FileRouteTypes {
     | '/hr/compensation'
     | '/hr/employees'
     | '/hr/leaves'
+    | '/hr/payroll'
     | '/inventory/movements'
     | '/sales/$id'
     | '/inventory/'
@@ -352,6 +362,7 @@ export interface FileRouteTypes {
     | '/hr/compensation'
     | '/hr/employees'
     | '/hr/leaves'
+    | '/hr/payroll'
     | '/inventory/movements'
     | '/sales/$id'
     | '/inventory'
@@ -384,6 +395,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hr/compensation'
     | '/_authenticated/hr/employees'
     | '/_authenticated/hr/leaves'
+    | '/_authenticated/hr/payroll'
     | '/_authenticated/inventory/movements'
     | '/_authenticated/sales/$id'
     | '/_authenticated/inventory/'
@@ -581,6 +593,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInventoryMovementsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/hr/payroll': {
+      id: '/_authenticated/hr/payroll'
+      path: '/hr/payroll'
+      fullPath: '/hr/payroll'
+      preLoaderRoute: typeof AuthenticatedHrPayrollRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/hr/leaves': {
       id: '/_authenticated/hr/leaves'
       path: '/hr/leaves'
@@ -635,6 +654,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHrCompensationRoute: typeof AuthenticatedHrCompensationRoute
   AuthenticatedHrEmployeesRoute: typeof AuthenticatedHrEmployeesRoute
   AuthenticatedHrLeavesRoute: typeof AuthenticatedHrLeavesRoute
+  AuthenticatedHrPayrollRoute: typeof AuthenticatedHrPayrollRoute
   AuthenticatedInventoryMovementsRoute: typeof AuthenticatedInventoryMovementsRoute
   AuthenticatedSalesIdRoute: typeof AuthenticatedSalesIdRoute
   AuthenticatedInventoryIndexRoute: typeof AuthenticatedInventoryIndexRoute
@@ -664,6 +684,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHrCompensationRoute: AuthenticatedHrCompensationRoute,
   AuthenticatedHrEmployeesRoute: AuthenticatedHrEmployeesRoute,
   AuthenticatedHrLeavesRoute: AuthenticatedHrLeavesRoute,
+  AuthenticatedHrPayrollRoute: AuthenticatedHrPayrollRoute,
   AuthenticatedInventoryMovementsRoute: AuthenticatedInventoryMovementsRoute,
   AuthenticatedSalesIdRoute: AuthenticatedSalesIdRoute,
   AuthenticatedInventoryIndexRoute: AuthenticatedInventoryIndexRoute,
