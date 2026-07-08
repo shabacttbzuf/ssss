@@ -19,6 +19,7 @@ import {
   BarChart3,
   Layers,
   ShieldCheck,
+  ScrollText,
 } from "lucide-react";
 import { useSuperOwner } from "@/hooks/use-super-owner";
 import {
@@ -96,10 +97,19 @@ export function AppSidebar() {
         ...groups,
         {
           label: "النظام",
-          items: [{ title: "إدارة النظام", url: "/admin", icon: ShieldCheck }],
+          items: [
+            { title: "إدارة النظام", url: "/admin", icon: ShieldCheck },
+            { title: "سجل التدقيق", url: "/audit-logs", icon: ScrollText },
+          ],
         },
       ]
-    : groups;
+    : [
+        ...groups,
+        {
+          label: "النظام",
+          items: [{ title: "سجل التدقيق", url: "/audit-logs", icon: ScrollText }],
+        },
+      ];
 
   return (
     <Sidebar collapsible="icon" side="right">

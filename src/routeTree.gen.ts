@@ -28,6 +28,7 @@ import { Route as AuthenticatedCustomersRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCategoriesRouteImport } from './routes/_authenticated/categories'
 import { Route as AuthenticatedCashSessionsRouteImport } from './routes/_authenticated/cash-sessions'
 import { Route as AuthenticatedBranchesRouteImport } from './routes/_authenticated/branches'
+import { Route as AuthenticatedAuditLogsRouteImport } from './routes/_authenticated/audit-logs'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedSalesIndexRouteImport } from './routes/_authenticated/sales.index'
 import { Route as AuthenticatedInventoryIndexRouteImport } from './routes/_authenticated/inventory.index'
@@ -130,6 +131,11 @@ const AuthenticatedBranchesRoute = AuthenticatedBranchesRouteImport.update({
   path: '/branches',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAuditLogsRoute = AuthenticatedAuditLogsRouteImport.update({
+  id: '/audit-logs',
+  path: '/audit-logs',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -163,6 +169,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/branches': typeof AuthenticatedBranchesRoute
   '/cash-sessions': typeof AuthenticatedCashSessionsRoute
   '/categories': typeof AuthenticatedCategoriesRoute
@@ -188,6 +195,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/branches': typeof AuthenticatedBranchesRoute
   '/cash-sessions': typeof AuthenticatedCashSessionsRoute
   '/categories': typeof AuthenticatedCategoriesRoute
@@ -215,6 +223,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/_authenticated/branches': typeof AuthenticatedBranchesRoute
   '/_authenticated/cash-sessions': typeof AuthenticatedCashSessionsRoute
   '/_authenticated/categories': typeof AuthenticatedCategoriesRoute
@@ -242,6 +251,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/onboarding'
     | '/admin'
+    | '/audit-logs'
     | '/branches'
     | '/cash-sessions'
     | '/categories'
@@ -267,6 +277,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/onboarding'
     | '/admin'
+    | '/audit-logs'
     | '/branches'
     | '/cash-sessions'
     | '/categories'
@@ -293,6 +304,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/onboarding'
     | '/_authenticated/admin'
+    | '/_authenticated/audit-logs'
     | '/_authenticated/branches'
     | '/_authenticated/cash-sessions'
     | '/_authenticated/categories'
@@ -456,6 +468,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBranchesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/audit-logs': {
+      id: '/_authenticated/audit-logs'
+      path: '/audit-logs'
+      fullPath: '/audit-logs'
+      preLoaderRoute: typeof AuthenticatedAuditLogsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
       path: '/admin'
@@ -496,6 +515,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedAuditLogsRoute: typeof AuthenticatedAuditLogsRoute
   AuthenticatedBranchesRoute: typeof AuthenticatedBranchesRoute
   AuthenticatedCashSessionsRoute: typeof AuthenticatedCashSessionsRoute
   AuthenticatedCategoriesRoute: typeof AuthenticatedCategoriesRoute
@@ -519,6 +539,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedAuditLogsRoute: AuthenticatedAuditLogsRoute,
   AuthenticatedBranchesRoute: AuthenticatedBranchesRoute,
   AuthenticatedCashSessionsRoute: AuthenticatedCashSessionsRoute,
   AuthenticatedCategoriesRoute: AuthenticatedCategoriesRoute,
