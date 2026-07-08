@@ -37,6 +37,7 @@ import { Route as AuthenticatedSalesIdRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedInventoryMovementsRouteImport } from './routes/_authenticated/inventory.movements'
 import { Route as AuthenticatedHrLeavesRouteImport } from './routes/_authenticated/hr.leaves'
 import { Route as AuthenticatedHrEmployeesRouteImport } from './routes/_authenticated/hr.employees'
+import { Route as AuthenticatedHrCompensationRouteImport } from './routes/_authenticated/hr.compensation'
 import { Route as AuthenticatedHrAttendanceRouteImport } from './routes/_authenticated/hr.attendance'
 
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -184,6 +185,12 @@ const AuthenticatedHrEmployeesRoute =
     path: '/hr/employees',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedHrCompensationRoute =
+  AuthenticatedHrCompensationRouteImport.update({
+    id: '/hr/compensation',
+    path: '/hr/compensation',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedHrAttendanceRoute =
   AuthenticatedHrAttendanceRouteImport.update({
     id: '/hr/attendance',
@@ -214,6 +221,7 @@ export interface FileRoutesByFullPath {
   '/team-permissions': typeof AuthenticatedTeamPermissionsRoute
   '/users': typeof AuthenticatedUsersRoute
   '/hr/attendance': typeof AuthenticatedHrAttendanceRoute
+  '/hr/compensation': typeof AuthenticatedHrCompensationRoute
   '/hr/employees': typeof AuthenticatedHrEmployeesRoute
   '/hr/leaves': typeof AuthenticatedHrLeavesRoute
   '/inventory/movements': typeof AuthenticatedInventoryMovementsRoute
@@ -244,6 +252,7 @@ export interface FileRoutesByTo {
   '/team-permissions': typeof AuthenticatedTeamPermissionsRoute
   '/users': typeof AuthenticatedUsersRoute
   '/hr/attendance': typeof AuthenticatedHrAttendanceRoute
+  '/hr/compensation': typeof AuthenticatedHrCompensationRoute
   '/hr/employees': typeof AuthenticatedHrEmployeesRoute
   '/hr/leaves': typeof AuthenticatedHrLeavesRoute
   '/inventory/movements': typeof AuthenticatedInventoryMovementsRoute
@@ -276,6 +285,7 @@ export interface FileRoutesById {
   '/_authenticated/team-permissions': typeof AuthenticatedTeamPermissionsRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/hr/attendance': typeof AuthenticatedHrAttendanceRoute
+  '/_authenticated/hr/compensation': typeof AuthenticatedHrCompensationRoute
   '/_authenticated/hr/employees': typeof AuthenticatedHrEmployeesRoute
   '/_authenticated/hr/leaves': typeof AuthenticatedHrLeavesRoute
   '/_authenticated/inventory/movements': typeof AuthenticatedInventoryMovementsRoute
@@ -308,6 +318,7 @@ export interface FileRouteTypes {
     | '/team-permissions'
     | '/users'
     | '/hr/attendance'
+    | '/hr/compensation'
     | '/hr/employees'
     | '/hr/leaves'
     | '/inventory/movements'
@@ -338,6 +349,7 @@ export interface FileRouteTypes {
     | '/team-permissions'
     | '/users'
     | '/hr/attendance'
+    | '/hr/compensation'
     | '/hr/employees'
     | '/hr/leaves'
     | '/inventory/movements'
@@ -369,6 +381,7 @@ export interface FileRouteTypes {
     | '/_authenticated/team-permissions'
     | '/_authenticated/users'
     | '/_authenticated/hr/attendance'
+    | '/_authenticated/hr/compensation'
     | '/_authenticated/hr/employees'
     | '/_authenticated/hr/leaves'
     | '/_authenticated/inventory/movements'
@@ -582,6 +595,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHrEmployeesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/hr/compensation': {
+      id: '/_authenticated/hr/compensation'
+      path: '/hr/compensation'
+      fullPath: '/hr/compensation'
+      preLoaderRoute: typeof AuthenticatedHrCompensationRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/hr/attendance': {
       id: '/_authenticated/hr/attendance'
       path: '/hr/attendance'
@@ -612,6 +632,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTeamPermissionsRoute: typeof AuthenticatedTeamPermissionsRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedHrAttendanceRoute: typeof AuthenticatedHrAttendanceRoute
+  AuthenticatedHrCompensationRoute: typeof AuthenticatedHrCompensationRoute
   AuthenticatedHrEmployeesRoute: typeof AuthenticatedHrEmployeesRoute
   AuthenticatedHrLeavesRoute: typeof AuthenticatedHrLeavesRoute
   AuthenticatedInventoryMovementsRoute: typeof AuthenticatedInventoryMovementsRoute
@@ -640,6 +661,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTeamPermissionsRoute: AuthenticatedTeamPermissionsRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
   AuthenticatedHrAttendanceRoute: AuthenticatedHrAttendanceRoute,
+  AuthenticatedHrCompensationRoute: AuthenticatedHrCompensationRoute,
   AuthenticatedHrEmployeesRoute: AuthenticatedHrEmployeesRoute,
   AuthenticatedHrLeavesRoute: AuthenticatedHrLeavesRoute,
   AuthenticatedInventoryMovementsRoute: AuthenticatedInventoryMovementsRoute,
