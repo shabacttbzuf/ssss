@@ -20,6 +20,7 @@ import {
   Layers,
   ShieldCheck,
   ScrollText,
+  KeyRound,
 } from "lucide-react";
 import { useSuperOwner } from "@/hooks/use-super-owner";
 import {
@@ -78,6 +79,7 @@ const groups: Group[] = [
       { title: "المنتجات", url: "/products", icon: Package },
       { title: "الأقسام", url: "/categories", icon: Tags },
       { title: "الموظفون", url: "/users", icon: Users },
+      { title: "صلاحيات الفريق", url: "/team-permissions", icon: KeyRound },
       { title: "الإعدادات", url: "/settings", icon: Settings },
     ],
   },
