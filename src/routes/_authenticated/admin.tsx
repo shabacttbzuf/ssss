@@ -11,6 +11,8 @@ import {
   revokeSuperOwner,
   toggleRolePermission,
 } from "@/lib/super-owner.functions";
+import { seedDemoData } from "@/lib/demo-data.functions";
+import { useActiveTenant } from "@/hooks/use-active-tenant";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -114,6 +116,7 @@ function AdminPage() {
           <TabsList>
             <TabsTrigger value="super-owners">المالك الرئيسي</TabsTrigger>
             <TabsTrigger value="roles">الأدوار والصلاحيات</TabsTrigger>
+            <TabsTrigger value="demo">بيانات تجريبية</TabsTrigger>
           </TabsList>
           <TabsContent value="super-owners" className="mt-4">
             <SuperOwnersTab />
@@ -121,9 +124,47 @@ function AdminPage() {
           <TabsContent value="roles" className="mt-4">
             <RolesTab />
           </TabsContent>
+          <TabsContent value="demo" className="mt-4">
+            <DemoDataTab />
+          </TabsContent>
         </Tabs>
       )}
     </div>
+  );
+}
+
+// ============================================================
+// Demo data tab (Phase 5)
+// ============================================================
+function DemoDataTab() {
+  const { tenantId, tenant } = useActiveTenant();
+  const seed = useServerFn(seedDemoData);
+  const qc = useQueryClient();
+  const mut = useMutation({
+    mutationFn: () => seed({ data: { tenant_id: tenantId! } }),
+    onSuccess: (res: { stats: Record<string, number> }) => {
+      const s = res.stats;
+      toast.success(`تم إدخال: ${s.branches} فرع، ${s.categories} قسم، ${s.products} منتج، ${s.customers} عميل، ${s.suppliers} مورد`);
+      qc.invalidateQueries();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>بيانات تجريبية للمطعم الحالي</CardTitle>
+        <CardDescription>
+          يُضيف فروعاً وأقساماً ومنتجات وعملاء وموردين إلى المطعم <b>{tenant?.name}</b>.
+          العملية آمنة ولا تكرّر البيانات الموجودة.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Button onClick={() => mut.mutate()} disabled={!tenantId || mut.isPending}>
+          {mut.isPending && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
+          إدخال البيانات التجريبية
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
 

@@ -87,8 +87,12 @@ export const createUser = createServerFn({ method: "POST" })
       tenant_id: data.tenant_id,
       role: data.role as any,
       branch_id: data.branch_id ?? null,
+      hired_by: context.userId,
     });
     if (roleErr) throw new Error(roleErr.message);
+
+    // Also stamp hired_by on profile for quick lookups
+    await supabaseAdmin.from("profiles").update({ hired_by: context.userId }).eq("id", newId);
 
     return { ok: true, user_id: newId };
   });

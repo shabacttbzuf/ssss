@@ -691,6 +691,7 @@ export type Database = {
           branch_id: string | null
           created_at: string
           full_name: string | null
+          hired_by: string | null
           id: string
           is_active: boolean
           last_login_at: string | null
@@ -704,6 +705,7 @@ export type Database = {
           branch_id?: string | null
           created_at?: string
           full_name?: string | null
+          hired_by?: string | null
           id: string
           is_active?: boolean
           last_login_at?: string | null
@@ -717,6 +719,7 @@ export type Database = {
           branch_id?: string | null
           created_at?: string
           full_name?: string | null
+          hired_by?: string | null
           id?: string
           is_active?: boolean
           last_login_at?: string | null
@@ -1153,10 +1156,44 @@ export type Database = {
         }
         Relationships: []
       }
+      user_permission_overrides: {
+        Row: {
+          created_at: string
+          granted: boolean
+          granted_by: string | null
+          id: string
+          permission_key: string
+          tenant_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          granted?: boolean
+          granted_by?: string | null
+          id?: string
+          permission_key: string
+          tenant_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          granted?: boolean
+          granted_by?: string | null
+          id?: string
+          permission_key?: string
+          tenant_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           branch_id: string | null
           created_at: string
+          hired_by: string | null
           id: string
           role: Database["public"]["Enums"]["app_role"]
           tenant_id: string
@@ -1165,6 +1202,7 @@ export type Database = {
         Insert: {
           branch_id?: string | null
           created_at?: string
+          hired_by?: string | null
           id?: string
           role: Database["public"]["Enums"]["app_role"]
           tenant_id: string
@@ -1173,6 +1211,7 @@ export type Database = {
         Update: {
           branch_id?: string | null
           created_at?: string
+          hired_by?: string | null
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           tenant_id?: string
@@ -1208,6 +1247,14 @@ export type Database = {
       }
       is_super_owner: { Args: { _user_id: string }; Returns: boolean }
       touch_last_login: { Args: never; Returns: undefined }
+      user_has_role_in_tenant: {
+        Args: { _roles: string[]; _tenant_id: string; _user_id: string }
+        Returns: boolean
+      }
+      was_hired_by: {
+        Args: { _actor: string; _target: string; _tenant_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role:
