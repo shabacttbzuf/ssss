@@ -21,6 +21,11 @@ import {
   ShieldCheck,
   ScrollText,
   KeyRound,
+  Briefcase,
+  CalendarDays,
+  Clock,
+  Gift,
+  Wallet2,
 } from "lucide-react";
 import { useSuperOwner } from "@/hooks/use-super-owner";
 import {
@@ -70,6 +75,16 @@ const groups: Group[] = [
     items: [
       { title: "المصروفات", url: "/expenses", icon: DollarSign },
       { title: "تصنيفات المصروفات", url: "/expense-categories", icon: Layers },
+    ],
+  },
+  {
+    label: "الموارد البشرية",
+    items: [
+      { title: "الموظفون", url: "/hr/employees", icon: Briefcase },
+      { title: "الحضور", url: "/hr/attendance", icon: Clock },
+      { title: "الإجازات", url: "/hr/leaves", icon: CalendarDays },
+      { title: "المكافآت والحسميات", url: "/hr/compensation", icon: Gift },
+      { title: "الرواتب", url: "/hr/payroll", icon: Wallet2 },
     ],
   },
   {
