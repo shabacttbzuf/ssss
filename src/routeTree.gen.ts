@@ -14,6 +14,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
+import { Route as AuthenticatedTeamPermissionsRouteImport } from './routes/_authenticated/team-permissions'
 import { Route as AuthenticatedSuppliersRouteImport } from './routes/_authenticated/suppliers'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
@@ -59,6 +60,12 @@ const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTeamPermissionsRoute =
+  AuthenticatedTeamPermissionsRouteImport.update({
+    id: '/team-permissions',
+    path: '/team-permissions',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSuppliersRoute = AuthenticatedSuppliersRouteImport.update({
   id: '/suppliers',
   path: '/suppliers',
@@ -184,6 +191,7 @@ export interface FileRoutesByFullPath {
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/suppliers': typeof AuthenticatedSuppliersRoute
+  '/team-permissions': typeof AuthenticatedTeamPermissionsRoute
   '/users': typeof AuthenticatedUsersRoute
   '/inventory/movements': typeof AuthenticatedInventoryMovementsRoute
   '/sales/$id': typeof AuthenticatedSalesIdRoute
@@ -210,6 +218,7 @@ export interface FileRoutesByTo {
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/suppliers': typeof AuthenticatedSuppliersRoute
+  '/team-permissions': typeof AuthenticatedTeamPermissionsRoute
   '/users': typeof AuthenticatedUsersRoute
   '/inventory/movements': typeof AuthenticatedInventoryMovementsRoute
   '/sales/$id': typeof AuthenticatedSalesIdRoute
@@ -238,6 +247,7 @@ export interface FileRoutesById {
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/suppliers': typeof AuthenticatedSuppliersRoute
+  '/_authenticated/team-permissions': typeof AuthenticatedTeamPermissionsRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/inventory/movements': typeof AuthenticatedInventoryMovementsRoute
   '/_authenticated/sales/$id': typeof AuthenticatedSalesIdRoute
@@ -266,6 +276,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/settings'
     | '/suppliers'
+    | '/team-permissions'
     | '/users'
     | '/inventory/movements'
     | '/sales/$id'
@@ -292,6 +303,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/settings'
     | '/suppliers'
+    | '/team-permissions'
     | '/users'
     | '/inventory/movements'
     | '/sales/$id'
@@ -319,6 +331,7 @@ export interface FileRouteTypes {
     | '/_authenticated/reports'
     | '/_authenticated/settings'
     | '/_authenticated/suppliers'
+    | '/_authenticated/team-permissions'
     | '/_authenticated/users'
     | '/_authenticated/inventory/movements'
     | '/_authenticated/sales/$id'
@@ -368,6 +381,13 @@ declare module '@tanstack/react-router' {
       path: '/users'
       fullPath: '/users'
       preLoaderRoute: typeof AuthenticatedUsersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/team-permissions': {
+      id: '/_authenticated/team-permissions'
+      path: '/team-permissions'
+      fullPath: '/team-permissions'
+      preLoaderRoute: typeof AuthenticatedTeamPermissionsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/suppliers': {
@@ -530,6 +550,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedSuppliersRoute: typeof AuthenticatedSuppliersRoute
+  AuthenticatedTeamPermissionsRoute: typeof AuthenticatedTeamPermissionsRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedInventoryMovementsRoute: typeof AuthenticatedInventoryMovementsRoute
   AuthenticatedSalesIdRoute: typeof AuthenticatedSalesIdRoute
@@ -554,6 +575,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedSuppliersRoute: AuthenticatedSuppliersRoute,
+  AuthenticatedTeamPermissionsRoute: AuthenticatedTeamPermissionsRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
   AuthenticatedInventoryMovementsRoute: AuthenticatedInventoryMovementsRoute,
   AuthenticatedSalesIdRoute: AuthenticatedSalesIdRoute,
