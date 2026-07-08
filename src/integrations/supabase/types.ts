@@ -19,42 +19,61 @@ export type Database = {
           address: string | null
           created_at: string
           currency: string
+          description: string | null
           id: string
+          image_url: string | null
           is_active: boolean
           logo_url: string | null
+          manager_id: string | null
           name: string
           phone: string | null
           tax_number: string | null
           tenant_id: string
           updated_at: string
+          working_hours: Json | null
         }
         Insert: {
           address?: string | null
           created_at?: string
           currency?: string
+          description?: string | null
           id?: string
+          image_url?: string | null
           is_active?: boolean
           logo_url?: string | null
+          manager_id?: string | null
           name: string
           phone?: string | null
           tax_number?: string | null
           tenant_id: string
           updated_at?: string
+          working_hours?: Json | null
         }
         Update: {
           address?: string | null
           created_at?: string
           currency?: string
+          description?: string | null
           id?: string
+          image_url?: string | null
           is_active?: boolean
           logo_url?: string | null
+          manager_id?: string | null
           name?: string
           phone?: string | null
           tax_number?: string | null
           tenant_id?: string
           updated_at?: string
+          working_hours?: Json | null
         }
         Relationships: [
+          {
+            foreignKeyName: "branches_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "branches_tenant_id_fkey"
             columns: ["tenant_id"]
@@ -133,8 +152,11 @@ export type Database = {
       categories: {
         Row: {
           created_at: string
+          description: string | null
           icon: string | null
           id: string
+          image_url: string | null
+          is_active: boolean
           name: string
           sort_order: number
           tenant_id: string
@@ -142,8 +164,11 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          description?: string | null
           icon?: string | null
           id?: string
+          image_url?: string | null
+          is_active?: boolean
           name: string
           sort_order?: number
           tenant_id: string
@@ -151,8 +176,11 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          description?: string | null
           icon?: string | null
           id?: string
+          image_url?: string | null
+          is_active?: boolean
           name?: string
           sort_order?: number
           tenant_id?: string
@@ -196,6 +224,56 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "custom_roles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customers: {
+        Row: {
+          address: string | null
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          phone: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          phone?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customers_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -492,45 +570,66 @@ export type Database = {
       }
       products: {
         Row: {
+          addons: Json | null
+          barcode: string | null
           category_id: string | null
           cost_price: number
           created_at: string
+          description: string | null
+          discount: number
+          gallery_urls: string[]
           id: string
           image_url: string | null
+          ingredients: string[]
           is_active: boolean
           min_stock: number
           name: string
           sale_price: number
+          size: string | null
           sku: string | null
           tenant_id: string
           unit: string
           updated_at: string
         }
         Insert: {
+          addons?: Json | null
+          barcode?: string | null
           category_id?: string | null
           cost_price?: number
           created_at?: string
+          description?: string | null
+          discount?: number
+          gallery_urls?: string[]
           id?: string
           image_url?: string | null
+          ingredients?: string[]
           is_active?: boolean
           min_stock?: number
           name: string
           sale_price?: number
+          size?: string | null
           sku?: string | null
           tenant_id: string
           unit?: string
           updated_at?: string
         }
         Update: {
+          addons?: Json | null
+          barcode?: string | null
           category_id?: string | null
           cost_price?: number
           created_at?: string
+          description?: string | null
+          discount?: number
+          gallery_urls?: string[]
           id?: string
           image_url?: string | null
+          ingredients?: string[]
           is_active?: boolean
           min_stock?: number
           name?: string
           sale_price?: number
+          size?: string | null
           sku?: string | null
           tenant_id?: string
           unit?: string
@@ -945,6 +1044,7 @@ export type Database = {
           email: string | null
           id: string
           is_active: boolean
+          logo_url: string | null
           name: string
           notes: string | null
           phone: string | null
@@ -957,6 +1057,7 @@ export type Database = {
           email?: string | null
           id?: string
           is_active?: boolean
+          logo_url?: string | null
           name: string
           notes?: string | null
           phone?: string | null
@@ -969,6 +1070,7 @@ export type Database = {
           email?: string | null
           id?: string
           is_active?: boolean
+          logo_url?: string | null
           name?: string
           notes?: string | null
           phone?: string | null
