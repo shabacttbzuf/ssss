@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, redirect, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -58,8 +58,19 @@ function AuthLayout() {
     return <Outlet />;
   }
 
+  return <AuthShell />;
+}
+
+function AuthShell() {
+  const [open, setOpen] = useState(false);
+  const pathname = useRouterState({ select: (r) => r.location.pathname });
+  // Auto-hide the sidebar after any route change to give more workspace.
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
   return (
-    <SidebarProvider>
+    <SidebarProvider open={open} onOpenChange={setOpen}>
       <div className="flex min-h-screen w-full">
         <AppSidebar />
         <SidebarInset>

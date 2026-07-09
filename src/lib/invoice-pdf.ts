@@ -141,3 +141,133 @@ export function downloadInvoicePDF(data: InvoiceData) {
   a.click();
   URL.revokeObjectURL(url);
 }
+
+const paymentAr: Record<string, string> = {
+  cash: "نقدي",
+  card: "بطاقة",
+  transfer: "تحويل / محفظة",
+  wallet: "محفظة",
+  mixed: "مختلط",
+};
+
+/**
+ * Open a print-ready HTML receipt in a new window.
+ * `paper` controls the CSS @page: 58mm / 80mm thermal or A4.
+ */
+export function printInvoiceHTML(
+  data: InvoiceData & {
+    address?: string | null;
+    phone?: string | null;
+    tenant_name?: string | null;
+    logo_url?: string | null;
+  },
+  paper: "58mm" | "80mm" | "A4" = "80mm",
+) {
+  const pageCss =
+    paper === "A4"
+      ? "@page { size: A4; margin: 12mm; }"
+      : paper === "58mm"
+        ? "@page { size: 58mm auto; margin: 2mm; }"
+        : "@page { size: 80mm auto; margin: 3mm; }";
+  const widthCss =
+    paper === "A4" ? "width: 100%;" : paper === "58mm" ? "width: 54mm;" : "width: 74mm;";
+  const rows = data.items
+    .map(
+      (i) => `
+        <tr>
+          <td class="name">${escapeHtml(i.product_name)}</td>
+          <td class="num">${i.quantity}</td>
+          <td class="num">${formatMoney(i.unit_price)}</td>
+          <td class="num">${formatMoney(i.line_total)}</td>
+        </tr>`,
+    )
+    .join("");
+  const html = `<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<title>فاتورة #${data.invoice_no}</title>
+<style>
+  ${pageCss}
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; font-family: "Cairo","Tajawal","Segoe UI",Tahoma,sans-serif; color:#000; background:#fff; }
+  .receipt { ${widthCss} margin: 0 auto; padding: 6px; font-size: ${paper === "A4" ? "13px" : "12px"}; }
+  .center { text-align: center; }
+  .muted { color: #444; font-size: 11px; }
+  h1 { font-size: ${paper === "A4" ? "20px" : "15px"}; margin: 2px 0; }
+  .logo { max-height: ${paper === "A4" ? "70px" : "48px"}; margin: 4px auto; display:block; }
+  .divider { border-top: 1px dashed #000; margin: 6px 0; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 3px 2px; font-size: ${paper === "A4" ? "12px" : "11px"}; }
+  thead th { border-bottom: 1px solid #000; text-align: right; }
+  td.num, th.num { text-align: center; font-variant-numeric: tabular-nums; }
+  td.name { text-align: right; word-break: break-word; }
+  .totals { margin-top: 6px; }
+  .totals .row { display:flex; justify-content: space-between; padding: 2px 0; }
+  .totals .grand { font-weight: 800; font-size: ${paper === "A4" ? "18px" : "14px"}; border-top:1px solid #000; padding-top:4px; margin-top:4px; }
+  .thanks { margin-top: 8px; font-weight: 700; }
+  .meta { display:flex; justify-content: space-between; gap:8px; }
+  .meta div { font-size: 11px; }
+  @media print { .no-print { display:none; } }
+</style>
+</head>
+<body>
+<div class="receipt">
+  ${data.logo_url ? `<img src="${escapeAttr(data.logo_url)}" class="logo" alt="logo" />` : ""}
+  <div class="center">
+    <h1>${escapeHtml(data.tenant_name || data.branch_name)}</h1>
+    <div class="muted">${escapeHtml(data.branch_name)}</div>
+    ${data.address ? `<div class="muted">${escapeHtml(data.address)}</div>` : ""}
+    ${data.phone ? `<div class="muted">هاتف: ${escapeHtml(data.phone)}</div>` : ""}
+    ${data.tax_number ? `<div class="muted">الرقم الضريبي: ${escapeHtml(data.tax_number)}</div>` : ""}
+  </div>
+  <div class="divider"></div>
+  <div class="meta">
+    <div>فاتورة #<b>${data.invoice_no}</b></div>
+    <div>${formatDateTime(data.created_at)}</div>
+  </div>
+  <div class="meta">
+    <div>الكاشير: ${escapeHtml(data.cashier_name || "-")}</div>
+    <div>الفرع: ${escapeHtml(data.branch_name)}</div>
+  </div>
+  <div class="divider"></div>
+  <table>
+    <thead>
+      <tr>
+        <th>الصنف</th>
+        <th class="num">كمية</th>
+        <th class="num">سعر</th>
+        <th class="num">إجمالي</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <div class="totals">
+    <div class="row"><span>المجموع الفرعي</span><span>${formatMoney(data.subtotal)} ${escapeHtml(data.currency)}</span></div>
+    ${data.discount > 0 ? `<div class="row"><span>الخصم</span><span>-${formatMoney(data.discount)} ${escapeHtml(data.currency)}</span></div>` : ""}
+    ${data.tax_amount > 0 ? `<div class="row"><span>الضريبة</span><span>${formatMoney(data.tax_amount)} ${escapeHtml(data.currency)}</span></div>` : ""}
+    <div class="row grand"><span>الإجمالي</span><span>${formatMoney(data.total)} ${escapeHtml(data.currency)}</span></div>
+    <div class="row"><span>طريقة الدفع</span><span>${escapeHtml(paymentAr[data.payment_method] ?? data.payment_method)}</span></div>
+  </div>
+  <div class="center thanks">شكراً لزيارتكم — نتشرف بخدمتكم مجدداً</div>
+</div>
+<script>window.onload = function(){ setTimeout(function(){ window.print(); }, 150); };</script>
+</body>
+</html>`;
+  const w = window.open("", "_blank", "width=420,height=720");
+  if (!w) return;
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
+}
+
+function escapeHtml(s: string): string {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+function escapeAttr(s: string): string {
+  return escapeHtml(s).replace(/'/g, "&#39;");
+}
