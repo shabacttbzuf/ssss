@@ -353,7 +353,7 @@ function POSPage() {
   const currency = tenant?.currency ?? "";
 
   return (
-    <div className="space-y-4">
+    <div className="flex h-[calc(100vh-3rem)] flex-col gap-2 overflow-hidden p-1">
       <PageHeader
         title="نقطة البيع"
         subtitle={currentBranch?.name}
@@ -372,123 +372,125 @@ function POSPage() {
         }
       />
 
-      {/* Top: categories + products */}
-      <div className="grid gap-4 lg:grid-cols-[300px_1fr]">
-        {/* Categories */}
-        <Card className="order-1">
-          <CardContent className="p-3">
-            <div className="mb-2 flex items-center justify-between border-b pb-2">
-              <h2 className="text-sm font-bold">الأقسام</h2>
-              <span className="text-xs text-muted-foreground">{(categories.data?.length ?? 0) + 1}</span>
-            </div>
-            <div className="grid max-h-[46vh] grid-cols-2 gap-2 overflow-y-auto pr-1">
-              <CategoryTile label="الكل" active={catFilter === "all"} onClick={() => setCatFilter("all")} />
-              {(categories.data ?? []).map((c) => (
-                <CategoryTile key={c.id} label={c.name} active={catFilter === c.id} onClick={() => setCatFilter(c.id)} />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Products */}
-        <Card className="order-2">
-          <CardContent className="p-3">
-            <div className="mb-2 flex items-center gap-2 border-b pb-2">
-              <h2 className="text-sm font-bold">المنتجات</h2>
-              <div className="relative mr-auto w-64 max-w-full">
-                <Search className="absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="بحث..."
-                  className="h-8 pr-8"
-                  autoFocus
-                />
+      {/* Three-column layout — fits in one screen */}
+      <div className="grid min-h-0 flex-1 gap-2 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_360px]">
+        {/* Left area: categories + products */}
+        <div className="grid min-h-0 gap-2 md:grid-cols-[140px_minmax(0,1fr)] lg:grid-cols-[160px_minmax(0,1fr)]">
+          {/* Categories */}
+          <Card className="min-h-0 overflow-hidden">
+            <CardContent className="flex h-full flex-col p-2">
+              <div className="mb-1.5 flex items-center justify-between border-b pb-1">
+                <h2 className="text-xs font-bold">الأقسام</h2>
+                <span className="text-[10px] text-muted-foreground">{(categories.data?.length ?? 0) + 1}</span>
               </div>
-            </div>
-            <div className="grid max-h-[46vh] grid-cols-2 gap-2 overflow-y-auto pr-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-              {filteredProducts.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => addToCart(p)}
-                  className="grid aspect-[4/3] place-items-center rounded-lg border bg-card p-2 text-center text-sm font-semibold transition hover:border-primary hover:bg-primary/5 active:scale-95"
-                >
-                  <span className="line-clamp-3">{p.name}</span>
-                </button>
-              ))}
-              {filteredProducts.length === 0 && (
-                <div className="col-span-full rounded-lg border bg-muted/30 p-6 text-center text-sm text-muted-foreground">
-                  لا توجد منتجات
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+              <div className="grid min-h-0 flex-1 grid-cols-1 gap-1.5 overflow-y-auto pr-0.5">
+                <CategoryTile label="الكل" active={catFilter === "all"} onClick={() => setCatFilter("all")} />
+                {(categories.data ?? []).map((c) => (
+                  <CategoryTile key={c.id} label={c.name} active={catFilter === c.id} onClick={() => setCatFilter(c.id)} />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
-      {/* Bottom: Invoice full-width */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="mb-3 flex flex-wrap items-center gap-2 border-b pb-2">
-            <h2 className="text-base font-bold">الفاتورة</h2>
+          {/* Products */}
+          <Card className="min-h-0 overflow-hidden">
+            <CardContent className="flex h-full flex-col p-2">
+              <div className="mb-1.5 flex items-center gap-2 border-b pb-1">
+                <h2 className="text-xs font-bold">المنتجات</h2>
+                <div className="relative mr-auto w-56 max-w-full">
+                  <Search className="absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="بحث..."
+                    className="h-7 pr-7 text-xs"
+                    autoFocus
+                  />
+                </div>
+                <span className="text-[10px] text-muted-foreground">{filteredProducts.length}</span>
+              </div>
+              <div className="grid min-h-0 flex-1 grid-cols-3 gap-1.5 overflow-y-auto pr-0.5 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
+                {filteredProducts.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => addToCart(p)}
+                    className="flex min-h-[62px] flex-col items-center justify-center rounded-md border bg-card p-1.5 text-center text-xs font-semibold leading-tight transition hover:border-primary hover:bg-primary/5 active:scale-95"
+                  >
+                    <span className="line-clamp-2">{p.name}</span>
+                    <span className="mt-1 text-[10px] font-normal text-muted-foreground num">{formatMoney(Number(p.sale_price))}</span>
+                  </button>
+                ))}
+                {filteredProducts.length === 0 && (
+                  <div className="col-span-full grid place-items-center rounded-md border bg-muted/30 p-6 text-center text-xs text-muted-foreground">
+                    لا توجد منتجات
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right column: invoice */}
+        <Card className="min-h-0 overflow-hidden">
+          <CardContent className="flex h-full flex-col p-2">
+            <div className="mb-1.5 flex flex-wrap items-center gap-2 border-b pb-1">
+              <h2 className="text-xs font-bold">الفاتورة</h2>
             <span className="text-xs text-muted-foreground">
               {cart.length} صنف • كمية {totalQty}
             </span>
             {drafts.length > 0 && (
               <div className="mr-auto flex flex-wrap items-center gap-1">
-                <span className="text-xs text-muted-foreground">المسودات:</span>
-                {drafts.slice(0, 4).map((d, idx) => (
-                  <Button key={d.id} size="sm" variant="outline" className="h-7 text-xs" onClick={() => restoreDraft(d)}>
+                <span className="text-[10px] text-muted-foreground">مسودات:</span>
+                {drafts.slice(0, 3).map((d, idx) => (
+                  <Button key={d.id} size="sm" variant="outline" className="h-6 px-1.5 text-[10px]" onClick={() => restoreDraft(d)}>
                     #{idx + 1} ({d.cart.length})
                   </Button>
                 ))}
               </div>
             )}
-          </div>
+            </div>
 
-          <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
-            {/* Items table */}
-            <div className="overflow-x-auto rounded-lg border">
-              <table className="w-full text-sm">
-                <thead className="bg-muted/50 text-xs">
+            {/* Items list */}
+            <div className="min-h-0 flex-1 overflow-y-auto rounded-md border">
+              <table className="w-full text-xs">
+                <thead className="sticky top-0 bg-muted/70 text-[10px]">
                   <tr>
-                    <th className="p-2 text-right">#</th>
-                    <th className="p-2 text-right">المنتج</th>
-                    <th className="p-2 text-center">الكمية</th>
-                    <th className="p-2 text-center">سعر الوحدة</th>
-                    <th className="p-2 text-center">الإجمالي</th>
-                    <th className="p-2 text-center">حذف</th>
+                    <th className="p-1.5 text-right">المنتج</th>
+                    <th className="p-1.5 text-center">الكمية</th>
+                    <th className="p-1.5 text-center">الإجمالي</th>
+                    <th className="p-1.5 text-center"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {cart.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="p-8 text-center text-muted-foreground">
-                        اضغط على أي منتج لإضافته إلى الفاتورة
+                      <td colSpan={4} className="p-6 text-center text-[11px] text-muted-foreground">
+                        اضغط على أي منتج لإضافته
                       </td>
                     </tr>
                   ) : (
-                    cart.map((i, idx) => (
+                    cart.map((i) => (
                       <tr key={i.product_id} className="border-t">
-                        <td className="p-2 text-right text-muted-foreground num">{idx + 1}</td>
-                        <td className="p-2 text-right font-medium">{i.name}</td>
-                        <td className="p-2 text-center">
-                          <div className="inline-flex items-center gap-1">
-                            <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => dec(i.product_id)}>
+                        <td className="p-1.5 text-right">
+                          <div className="font-medium leading-tight">{i.name}</div>
+                          <div className="text-[10px] text-muted-foreground num">{formatMoney(i.unit_price)}</div>
+                        </td>
+                        <td className="p-1.5 text-center">
+                          <div className="inline-flex items-center gap-0.5">
+                            <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => dec(i.product_id)}>
                               <Minus className="h-3 w-3" />
                             </Button>
-                            <span className="min-w-8 text-center font-semibold num">{i.quantity}</span>
-                            <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => inc(i.product_id)}>
+                            <span className="min-w-6 text-center text-xs font-semibold num">{i.quantity}</span>
+                            <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => inc(i.product_id)}>
                               <Plus className="h-3 w-3" />
                             </Button>
                           </div>
                         </td>
-                        <td className="p-2 text-center num">{formatMoney(i.unit_price)}</td>
-                        <td className="p-2 text-center font-bold num">{formatMoney(i.unit_price * i.quantity)}</td>
-                        <td className="p-2 text-center">
-                          <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => remove(i.product_id)}>
-                            <Trash2 className="h-4 w-4" />
+                        <td className="p-1.5 text-center font-bold num">{formatMoney(i.unit_price * i.quantity)}</td>
+                        <td className="p-1.5 text-center">
+                          <Button size="icon" variant="ghost" className="h-6 w-6 text-destructive" onClick={() => remove(i.product_id)}>
+                            <Trash2 className="h-3.5 w-3.5" />
                           </Button>
                         </td>
                       </tr>
@@ -499,73 +501,63 @@ function POSPage() {
             </div>
 
             {/* Totals */}
-            <div className="space-y-3">
-              <div className="rounded-lg border bg-muted/30 p-3 text-sm">
-                <div className="mb-2 flex items-center gap-2">
-                  <Label className="shrink-0 text-xs text-muted-foreground">خصم</Label>
-                  <Input type="number" min="0" step="0.01" value={discount} onChange={(e) => setDiscount(e.target.value)} className="h-8 text-sm" />
-                </div>
-                <div className="flex justify-between text-muted-foreground">
-                  <span>عدد الأصناف</span>
-                  <span className="num">{cart.length}</span>
-                </div>
-                <div className="flex justify-between text-muted-foreground">
-                  <span>إجمالي الكمية</span>
-                  <span className="num">{totalQty}</span>
-                </div>
-                <div className="mt-1 flex justify-between text-muted-foreground">
-                  <span>المجموع الفرعي</span>
-                  <span className="num">{formatMoney(subtotal)}</span>
-                </div>
-                {disc > 0 && (
-                  <div className="flex justify-between text-destructive">
-                    <span>الخصم</span>
-                    <span className="num">-{formatMoney(disc)}</span>
-                  </div>
-                )}
-                {taxRate > 0 && (
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>الضريبة ({taxRate}%)</span>
-                    <span className="num">{formatMoney(taxAmount)}</span>
-                  </div>
-                )}
-                <div className="mt-2 flex items-baseline justify-between border-t pt-2 text-2xl font-black">
-                  <span>الإجمالي</span>
-                  <span className="num text-primary">
-                    {formatMoney(total)} <span className="text-sm font-normal text-muted-foreground">{currency}</span>
-                  </span>
-                </div>
+            <div className="mt-1.5 rounded-md border bg-muted/30 p-2 text-xs">
+              <div className="mb-1.5 flex items-center gap-2">
+                <Label className="shrink-0 text-[10px] text-muted-foreground">خصم</Label>
+                <Input type="number" min="0" step="0.01" value={discount} onChange={(e) => setDiscount(e.target.value)} className="h-7 text-xs" />
               </div>
-
-              {/* Payment buttons */}
-              <div className="grid grid-cols-3 gap-2">
-                <PayBtn icon={Banknote} label="نقدي" onClick={() => checkoutMut.mutate("cash")} disabled={checkoutMut.isPending || cart.length === 0} />
-                <PayBtn icon={Wallet} label="محفظة" onClick={() => checkoutMut.mutate("wallet")} disabled={checkoutMut.isPending || cart.length === 0} />
-                <PayBtn icon={CreditCard} label="بطاقة" onClick={() => checkoutMut.mutate("card")} disabled={checkoutMut.isPending || cart.length === 0} />
+              <div className="flex justify-between text-muted-foreground">
+                <span>الفرعي</span>
+                <span className="num">{formatMoney(subtotal)}</span>
               </div>
-
-              {/* Action row */}
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                <Button variant="outline" size="sm" onClick={() => holdOrDraft("تم تعليق الفاتورة")}> <Pause className="ml-1 h-4 w-4" /> تعليق</Button>
-                <Button variant="outline" size="sm" onClick={() => holdOrDraft("تم الحفظ كمسودة")}> <Save className="ml-1 h-4 w-4" /> مسودة</Button>
-                <Button variant="outline" size="sm" onClick={printPreview}> <Printer className="ml-1 h-4 w-4" /> طباعة</Button>
-                <Button variant="outline" size="sm" className="text-destructive" onClick={() => { setCart([]); setDiscount("0"); }} disabled={cart.length === 0}>
-                  <X className="ml-1 h-4 w-4" /> إلغاء
-                </Button>
-                <Button
-                  size="sm"
-                  className="col-span-2 bg-success text-success-foreground hover:bg-success/90"
-                  onClick={() => checkoutMut.mutate("cash")}
-                  disabled={checkoutMut.isPending || cart.length === 0}
-                >
-                  {checkoutMut.isPending ? <Loader2 className="ml-1 h-4 w-4 animate-spin" /> : <CheckCircle2 className="ml-1 h-4 w-4" />}
-                  إتمام البيع
-                </Button>
+              {disc > 0 && (
+                <div className="flex justify-between text-destructive">
+                  <span>الخصم</span>
+                  <span className="num">-{formatMoney(disc)}</span>
+                </div>
+              )}
+              {taxRate > 0 && (
+                <div className="flex justify-between text-muted-foreground">
+                  <span>ضريبة ({taxRate}%)</span>
+                  <span className="num">{formatMoney(taxAmount)}</span>
+                </div>
+              )}
+              <div className="mt-1 flex items-baseline justify-between border-t pt-1 text-lg font-black">
+                <span>الإجمالي</span>
+                <span className="num text-primary">
+                  {formatMoney(total)} <span className="text-[10px] font-normal text-muted-foreground">{currency}</span>
+                </span>
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+
+            {/* Payment buttons */}
+            <div className="mt-1.5 grid grid-cols-3 gap-1.5">
+              <PayBtn icon={Banknote} label="نقدي" onClick={() => checkoutMut.mutate("cash")} disabled={checkoutMut.isPending || cart.length === 0} />
+              <PayBtn icon={Wallet} label="محفظة" onClick={() => checkoutMut.mutate("wallet")} disabled={checkoutMut.isPending || cart.length === 0} />
+              <PayBtn icon={CreditCard} label="بطاقة" onClick={() => checkoutMut.mutate("card")} disabled={checkoutMut.isPending || cart.length === 0} />
+            </div>
+
+            {/* Action row */}
+            <div className="mt-1.5 grid grid-cols-4 gap-1">
+              <Button variant="outline" size="sm" className="h-8 px-1 text-[10px]" onClick={() => holdOrDraft("تم التعليق")}> <Pause className="ml-0.5 h-3 w-3" />تعليق</Button>
+              <Button variant="outline" size="sm" className="h-8 px-1 text-[10px]" onClick={() => holdOrDraft("تم الحفظ")}> <Save className="ml-0.5 h-3 w-3" />مسودة</Button>
+              <Button variant="outline" size="sm" className="h-8 px-1 text-[10px]" onClick={printPreview}> <Printer className="ml-0.5 h-3 w-3" />طباعة</Button>
+              <Button variant="outline" size="sm" className="h-8 px-1 text-[10px] text-destructive" onClick={() => { setCart([]); setDiscount("0"); }} disabled={cart.length === 0}>
+                <X className="ml-0.5 h-3 w-3" />إلغاء
+              </Button>
+            </div>
+            <Button
+              size="sm"
+              className="mt-1.5 h-10 bg-success text-sm font-bold text-success-foreground hover:bg-success/90"
+              onClick={() => checkoutMut.mutate("cash")}
+              disabled={checkoutMut.isPending || cart.length === 0}
+            >
+              {checkoutMut.isPending ? <Loader2 className="ml-1 h-4 w-4 animate-spin" /> : <CheckCircle2 className="ml-1 h-4 w-4" />}
+              إتمام البيع
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
@@ -575,7 +567,7 @@ function CategoryTile({ label, active, onClick }: { label: string; active: boole
     <button
       type="button"
       onClick={onClick}
-      className={`grid aspect-[3/2] place-items-center rounded-lg border p-2 text-center text-sm font-semibold transition active:scale-95 ${
+      className={`grid min-h-[44px] place-items-center rounded-md border p-1.5 text-center text-[11px] font-semibold leading-tight transition active:scale-95 ${
         active ? "border-primary bg-primary text-primary-foreground shadow" : "bg-card hover:border-primary hover:bg-primary/5"
       }`}
     >
@@ -590,10 +582,10 @@ function PayBtn({ icon: Icon, label, onClick, disabled }: { icon: typeof Banknot
       variant="outline"
       onClick={onClick}
       disabled={disabled}
-      className="flex h-16 flex-col gap-1 border-2 hover:border-primary hover:bg-primary/5"
+      className="flex h-11 flex-col gap-0.5 border hover:border-primary hover:bg-primary/5"
     >
-      <Icon className="h-5 w-5" />
-      <span className="text-xs font-semibold">{label}</span>
+      <Icon className="h-4 w-4" />
+      <span className="text-[10px] font-semibold">{label}</span>
     </Button>
   );
 }
