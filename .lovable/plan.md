@@ -1,105 +1,85 @@
-## المرحلة 6 (الأخيرة) — نظام الموارد البشرية + إعادة بناء POS + الفحص الشامل
+# إصدار 1.1 — تحسينات إنتاجية بدون كسر توافقي
 
-سأنفّذ هذه المرحلة على 3 محاور متكاملة، ثم فحص شامل نهائي قبل التسليم.
-
----
-
-### المحور 1 — نظام الموارد البشرية (HR) الاحترافي
-
-**قاعدة البيانات (Migration واحدة):**
-
-- `employees` — يمتد `profiles`: `employee_no`, `job_title`, `department`, `branch_id`, `hire_date`, `contract_type` (full_time/part_time/contract/hourly), `base_salary`, `hourly_rate`, `bank_account`, `national_id`, `emergency_contact`, `status` (active/suspended/terminated), `termination_date`, `notes`.
-- `leave_types` — كتالوج: `name`, `days_per_year`, `is_paid`, `requires_approval`, `color`.
-- `leave_requests` — `employee_id`, `leave_type_id`, `start_date`, `end_date`, `days_count`, `reason`, `status` (pending/approved/rejected), `approved_by`, `approved_at`, `rejection_reason`.
-- `attendance` — `employee_id`, `date`, `check_in`, `check_out`, `hours_worked`, `is_late`, `status` (present/absent/leave/holiday).
-- `bonuses` — `employee_id`, `amount`, `reason`, `bonus_type` (performance/eid/annual/other), `paid_date`, `payroll_id`.
-- `deductions` — `employee_id`, `amount`, `reason`, `deduction_type` (absence/late/advance/insurance/other), `applied_date`, `payroll_id`.
-- `payroll_runs` — `tenant_id`, `month`, `year`, `branch_id`, `total_gross`, `total_net`, `total_deductions`, `total_bonuses`, `status` (draft/approved/paid), `approved_by`, `paid_at`.
-- `payroll_items` — `payroll_run_id`, `employee_id`, `base_salary`, `bonuses_total`, `deductions_total`, `overtime`, `gross`, `net`, `notes`.
-- دالة `calculate_employee_payroll(emp_id, month, year)` — تجمع الأساسي + المكافآت + الحسميات + الحضور.
-- سياسات RLS: المدير يرى موظفي فرعه، المالك يرى الكل، الموظف يرى بياناته فقط، Super Owner كل شيء.
-- GRANTs كاملة لكل جدول.
-
-**Server Functions:**
-- `runMonthlyPayroll(month, year, branch_id?)` — يحسب الرواتب لكل الموظفين النشطين ويُنشئ `payroll_run` + `payroll_items`.
-- `approvePayroll(id)` / `markPayrollPaid(id)`.
-- `approveLeaveRequest(id)` / `rejectLeaveRequest(id, reason)`.
-
-**الواجهات (6 صفحات جديدة):**
-- `/hr/employees` — قائمة موظفين مع فلترة بالفرع/الحالة، بطاقات احترافية.
-- `/hr/employees/$id` — ملف الموظف الكامل: بيانات، عقد، حضور، إجازات، مكافآت/حسميات، تاريخ الرواتب.
-- `/hr/leaves` — طلبات الإجازات (كل الموظفين للمدير، الخاصة للموظف) مع الموافقة/الرفض.
-- `/hr/attendance` — سجل الحضور اليومي + تسجيل يدوي.
-- `/hr/bonuses-deductions` — إدارة المكافآت والحسميات.
-- `/hr/payroll` — إنشاء دورة رواتب شهرية، مراجعة، اعتماد، طباعة قسائم راتب PDF.
-
-**السايدبار:** مجموعة جديدة "الموارد البشرية" تضم الروابط أعلاه.
+سأنفّذ 7 مهام على 3 دفعات، مع الحفاظ الكامل على الميزات وقاعدة البيانات الحالية (إضافة فقط، بدون حذف أو إعادة تسمية).
 
 ---
 
-### المحور 2 — إعادة بناء صفحة نقطة البيع (POS)
+## المهمة 1 — تحسين شاشة الكاشير (تصميم فقط)
 
-Layout جديد ثلاثي احترافي (مستوحى من Toast/Square/Lightspeed):
+الملف: `src/routes/_authenticated/pos.tsx`
 
-```
-┌─────────────────────────────────────────────────────────┐
-│  Header: الفرع • الكاشير • جلسة الصندوق • بحث           │
-├──────────────┬────────────────────────┬─────────────────┤
-│              │                        │                 │
-│  الأقسام     │   منتجات القسم         │   الفاتورة      │
-│  (Grid       │   (Grid بطاقات         │   (Cart بنود    │
-│   عمودي      │    بصور، سعر،          │    مع + / -     │
-│   بأيقونات)  │    مخزون)              │    زر حذف       │
-│              │                        │    خصم/ضريبة    │
-│  22%         │   48%                  │    30%          │
-│              │                        │                 │
-│              │                        │  زر دفع كبير    │
-└──────────────┴────────────────────────┴─────────────────┘
-```
+- تصغير الأبعاد: البطاقات، الخطوط، والحشو، وإبقاء الأزرار مناسبة للمس (min 40px).
+- إعادة توزيع الأعمدة بشبكة CSS Grid مع قيم مرنة:
+  - الأقسام: `w-20 lg:w-24` عمود أيقونات مضغوط.
+  - المنتجات: شبكة `grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6` ببطاقات صغيرة.
+  - الفاتورة: عمود ثابت `w-[320px] xl:w-[360px]` مع جدول مضغوط.
+- استخدام `h-[calc(100vh-3rem)]` مع `overflow-hidden` على المستوى العام و`overflow-auto` داخل كل قسم فقط، لتفادي التمرير الكلي.
+- الحفاظ الكامل على منطق العربة، الخصومات، الدفع، الطباعة، والمسودات (لا تغيير لأي state أو mutation).
 
-- **قسم الأقسام (يمين/يسار):** بطاقات كبيرة قابلة للنقر بأيقونة + اسم؛ اختيار قسم يُصفّي المنتجات.
-- **قسم المنتجات (وسط):** شبكة بطاقات (صورة، اسم، سعر، شارة مخزون)؛ نقر يضيف للفاتورة؛ بحث نصي علوي.
-- **قسم الفاتورة (يسار/يمين):** جدول احترافي (الاسم + الكمية بأزرار +/- + السعر + الإجمالي + زر حذف 🗑️)؛ ملخّص أسفل (الفرعي، الخصم، الضريبة، الإجمالي)؛ اختيار طريقة الدفع؛ زر "إتمام البيع" بارز.
-- تصميم موبايل: تبويبات (Categories / Products / Cart) بنقرة واحدة.
-- كل الأزرار بألوان دلالية من design tokens (بدون hardcoded colors).
+## المهمة 2 — استقرار وحدة التقارير
+
+الملف: `src/routes/_authenticated/reports.tsx`
+
+- تشخيص التجميد: قد يكون بسبب جلب كميات كبيرة (sales/sale_items بدون تحديد فترة أو limit) أو حسابات مزامنة ثقيلة في الرندر.
+- الإصلاح:
+  - إضافة نطاق تاريخ افتراضي (آخر 30 يوم) قبل أي استعلام.
+  - `useMemo` لجميع الحسابات المشتقة.
+  - تقسيم الاستعلامات لكل بطاقة/رسم مستقل مع `staleTime` مناسب.
+  - Lazy load للرسوم البيانية الثقيلة عبر `React.lazy` + `Suspense`.
+  - إضافة حد أعلى (`.limit()`) للاستعلامات الأولية مع فلترة بالفرع والتاريخ.
+- لا تغيير في الـ schema.
+
+## المهمة 3 — أنواع حالة الحضور (migration توسعية)
+
+- إضافة قيم جديدة لعمود `attendance.status` (نصي حالياً، لن يكسر البيانات القديمة):
+  present, late, early_leave, absent, absent_excused, absent_unexcused, weekly_holiday, annual_leave, sick_leave, official_holiday, mission, training, suspended, overtime.
+- إضافة أعمدة nullable للتحضير المستقبلي:
+  - `attendance.source TEXT DEFAULT 'manual'` (manual/biometric/kiosk/api)
+  - `attendance.device_id TEXT NULL`
+  - `attendance.biometric_ref TEXT NULL`
+- طبقة تجريد `src/lib/attendance-devices.ts` (interface فقط، بدون تنفيذ فعلي) لتحضير التكامل البصمي والطباعة لاحقاً.
+- تحديث UI: `hr.attendance.tsx` لدعم كل الأنواع بألوان دلالية.
+
+## المهمة 4 — محرك الرواتب المؤسسي (توسعي)
+
+- migration:
+  - `employees`: إضافة أعمدة nullable: `salary_type` (monthly/daily/hourly, default 'monthly')، `daily_salary`، `hourly_salary`، `working_hours_per_day` (default 8)، `work_schedule` JSONB nullable، `working_days_per_month` (default 26).
+  - `payroll_items`: إضافة أعمدة nullable: `working_hours`، `attendance_days`، `overtime_hours`، `overtime_amount`، `incentives_total`، `absence_deduction`، `late_deduction`، `holidays_count`، `leave_days`.
+  - `payroll_runs`: إضافة `rejection_reason TEXT NULL` وتوسيع status ليقبل `rejected`.
+- تحديث `hr.functions.ts`:
+  - `runMonthlyPayroll`: احتساب Daily = Monthly / working_days_per_month، Hourly = Daily / working_hours_per_day، حساب الحسميات على الأساسي (Base) وليس الإجمالي.
+  - إضافة `rejectPayroll(id, reason)` — يعيد الحالة إلى draft ويسمح بإعادة الاحتساب.
+- UI في `hr.payroll.tsx`: أزرار موافقة/رفض + عرض تفصيلي.
+
+## المهمة 5 — تسجيل الموظف
+
+- `hr.employees.tsx`: إضافة الحقول الجديدة (نوع الراتب، ساعات العمل اليومية، جدول العمل، تاريخ التوظيف موجود بالفعل).
+- حساب تلقائي للراتب اليومي والساعي (عرض live).
+
+## المهمة 6 — سلامة التطوير
+
+- كل الأعمدة الجديدة NULLABLE أو ذات قيم افتراضية آمنة.
+- لا حذف/إعادة تسمية.
+- سياسات RLS الحالية تبقى كما هي؛ لا تغيير في الأدوار.
+
+## المهمة 7 — التحقق النهائي
+
+- تشغيل `tsgo` + build.
+- فحص الأخطاء في console الجديد.
+- التأكد من عمل كل الصفحات (سريع بـ Playwright على المسارات الرئيسية).
+- تقرير بجميع الملفات المعدلة.
 
 ---
 
-### المحور 3 — الفحص الشامل النهائي
+## الملفات المتوقع تعديلها
 
-1. **`supabase--linter`** — فحص RLS و search_path لكل الدوال الجديدة.
-2. **`security--run_security_scan`** — فحص أمني كامل.
-3. **`tsgo`** — فحص TypeScript.
-4. **Playwright end-to-end:**
-   - تسجيل دخول → إنشاء موظف → طلب إجازة → موافقة → تشغيل دورة رواتب → طباعة قسيمة.
-   - فتح POS → اختيار قسم → إضافة منتجات → تعديل كميات → حذف بند → إتمام بيع → طباعة فاتورة.
-   - screenshots في كل خطوة رئيسية للتحقق البصري.
-5. **تقرير جاهزية مكتوب** يشمل:
-   - قائمة الميزات المكتملة.
-   - أي تحذيرات أمنية متبقية (مع الشرح).
-   - خطوات التشغيل (كيف يبدأ المستخدم).
-   - قائمة "ما يمكن إضافته لاحقاً" (تحسينات مستقبلية).
-
----
-
-### التفاصيل التقنية
-
-- كل الجداول الجديدة: `tenant_id UUID NOT NULL` + `id` + `created_at` + `updated_at` + `set_updated_at` trigger + GRANTs (`authenticated` + `service_role`) + RLS.
-- سياسات RLS تعتمد على `has_role`/`has_permission`/`is_super_owner` + فحص فرع (لمنع مدير من رؤية موظفي فرع آخر).
-- Audit log trigger يُطبَّق على `employees`, `payroll_runs`, `leave_requests`, `bonuses`, `deductions`.
-- إضافة صلاحيات جديدة للـ enum: `hr.view`, `hr.manage`, `payroll.run`, `payroll.approve`, `leaves.approve`.
-- كل الأموال بـ `NUMERIC(12,2)` مع `formatMoney` من `@/lib/format`.
-- POS يبقى يستخدم نفس منطق `sales` + `sale_items` + trigger `on_sale_item_insert` الحالي — تصميم جديد فقط، لا كسر خلفي.
-
----
-
-### تحذيرات
-
-- هذه المرحلة كبيرة (migration واحدة كبيرة + ~10 ملفات جديدة + إعادة كتابة POS). سأنفّذها على دفعة واحدة ثم أتوقف للفحص.
-- لن أحذف أي جدول أو سياسة قائمة.
-- قسائم الراتب PDF ستستخدم نفس أداة `invoice-pdf.ts` بقالب مخصص.
-- الفحص الشامل سيتم في نفس الجلسة بعد اكتمال البناء.
-
----
+- **migration جديدة**: توسعة `attendance`, `employees`, `payroll_items`, `payroll_runs`.
+- `src/routes/_authenticated/pos.tsx` — تكثيف التخطيط.
+- `src/routes/_authenticated/reports.tsx` — استقرار + lazy.
+- `src/routes/_authenticated/hr.attendance.tsx` — أنواع الحضور.
+- `src/routes/_authenticated/hr.employees.tsx` — حقول جديدة.
+- `src/routes/_authenticated/hr.payroll.tsx` — رفض/إعادة احتساب.
+- `src/lib/hr.functions.ts` — محرك الرواتب الموسّع + rejectPayroll.
+- `src/lib/attendance-devices.ts` (جديد) — واجهة تجريد.
 
 هل أبدأ التنفيذ؟
