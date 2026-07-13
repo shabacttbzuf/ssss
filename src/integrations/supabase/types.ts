@@ -16,43 +16,61 @@ export type Database = {
     Tables: {
       attendance: {
         Row: {
+          biometric_ref: string | null
           check_in: string | null
           check_out: string | null
           created_at: string
           date: string
+          device_id: string | null
+          early_leave_minutes: number | null
           employee_id: string
           hours_worked: number
           id: string
           is_late: boolean
+          late_minutes: number | null
           notes: string | null
+          overtime_hours: number | null
+          source: string | null
           status: string
           tenant_id: string
           updated_at: string
         }
         Insert: {
+          biometric_ref?: string | null
           check_in?: string | null
           check_out?: string | null
           created_at?: string
           date: string
+          device_id?: string | null
+          early_leave_minutes?: number | null
           employee_id: string
           hours_worked?: number
           id?: string
           is_late?: boolean
+          late_minutes?: number | null
           notes?: string | null
+          overtime_hours?: number | null
+          source?: string | null
           status?: string
           tenant_id: string
           updated_at?: string
         }
         Update: {
+          biometric_ref?: string | null
           check_in?: string | null
           check_out?: string | null
           created_at?: string
           date?: string
+          device_id?: string | null
+          early_leave_minutes?: number | null
           employee_id?: string
           hours_worked?: number
           id?: string
           is_late?: boolean
+          late_minutes?: number | null
           notes?: string | null
+          overtime_hours?: number | null
+          source?: string | null
           status?: string
           tenant_id?: string
           updated_at?: string
@@ -512,6 +530,7 @@ export type Database = {
           contract_type: string
           created_at: string
           created_by: string | null
+          daily_salary: number | null
           department: string | null
           email: string | null
           emergency_contact: string | null
@@ -519,16 +538,21 @@ export type Database = {
           full_name: string
           hire_date: string
           hourly_rate: number
+          hourly_salary: number | null
           id: string
           job_title: string | null
           national_id: string | null
           notes: string | null
           phone: string | null
+          salary_type: string | null
           status: string
           tenant_id: string
           termination_date: string | null
           updated_at: string
           user_id: string | null
+          work_schedule: Json | null
+          working_days_per_month: number | null
+          working_hours_per_day: number | null
         }
         Insert: {
           avatar_url?: string | null
@@ -539,6 +563,7 @@ export type Database = {
           contract_type?: string
           created_at?: string
           created_by?: string | null
+          daily_salary?: number | null
           department?: string | null
           email?: string | null
           emergency_contact?: string | null
@@ -546,16 +571,21 @@ export type Database = {
           full_name: string
           hire_date?: string
           hourly_rate?: number
+          hourly_salary?: number | null
           id?: string
           job_title?: string | null
           national_id?: string | null
           notes?: string | null
           phone?: string | null
+          salary_type?: string | null
           status?: string
           tenant_id: string
           termination_date?: string | null
           updated_at?: string
           user_id?: string | null
+          work_schedule?: Json | null
+          working_days_per_month?: number | null
+          working_hours_per_day?: number | null
         }
         Update: {
           avatar_url?: string | null
@@ -566,6 +596,7 @@ export type Database = {
           contract_type?: string
           created_at?: string
           created_by?: string | null
+          daily_salary?: number | null
           department?: string | null
           email?: string | null
           emergency_contact?: string | null
@@ -573,16 +604,21 @@ export type Database = {
           full_name?: string
           hire_date?: string
           hourly_rate?: number
+          hourly_salary?: number | null
           id?: string
           job_title?: string | null
           national_id?: string | null
           notes?: string | null
           phone?: string | null
+          salary_type?: string | null
           status?: string
           tenant_id?: string
           termination_date?: string | null
           updated_at?: string
           user_id?: string | null
+          work_schedule?: Json | null
+          working_days_per_month?: number | null
+          working_hours_per_day?: number | null
         }
         Relationships: [
           {
@@ -989,49 +1025,79 @@ export type Database = {
       }
       payroll_items: {
         Row: {
+          absence_deduction: number | null
+          attendance_days: number | null
           base_salary: number
           bonuses_total: number
           created_at: string
+          daily_rate: number | null
           deductions_total: number
           employee_id: string
           gross: number
+          holidays_count: number | null
+          hourly_rate: number | null
           id: string
+          incentives_total: number | null
+          late_deduction: number | null
+          leave_days: number | null
           net: number
           notes: string | null
           overtime_amount: number
+          overtime_hours: number | null
           payroll_run_id: string
           tenant_id: string
           updated_at: string
+          working_hours: number | null
         }
         Insert: {
+          absence_deduction?: number | null
+          attendance_days?: number | null
           base_salary?: number
           bonuses_total?: number
           created_at?: string
+          daily_rate?: number | null
           deductions_total?: number
           employee_id: string
           gross?: number
+          holidays_count?: number | null
+          hourly_rate?: number | null
           id?: string
+          incentives_total?: number | null
+          late_deduction?: number | null
+          leave_days?: number | null
           net?: number
           notes?: string | null
           overtime_amount?: number
+          overtime_hours?: number | null
           payroll_run_id: string
           tenant_id: string
           updated_at?: string
+          working_hours?: number | null
         }
         Update: {
+          absence_deduction?: number | null
+          attendance_days?: number | null
           base_salary?: number
           bonuses_total?: number
           created_at?: string
+          daily_rate?: number | null
           deductions_total?: number
           employee_id?: string
           gross?: number
+          holidays_count?: number | null
+          hourly_rate?: number | null
           id?: string
+          incentives_total?: number | null
+          late_deduction?: number | null
+          leave_days?: number | null
           net?: number
           notes?: string | null
           overtime_amount?: number
+          overtime_hours?: number | null
           payroll_run_id?: string
           tenant_id?: string
           updated_at?: string
+          working_hours?: number | null
         }
         Relationships: [
           {
@@ -1069,6 +1135,9 @@ export type Database = {
           paid_at: string | null
           period_month: number
           period_year: number
+          rejected_at: string | null
+          rejected_by: string | null
+          rejection_reason: string | null
           status: string
           tenant_id: string
           total_bonuses: number
@@ -1088,6 +1157,9 @@ export type Database = {
           paid_at?: string | null
           period_month: number
           period_year: number
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
           status?: string
           tenant_id: string
           total_bonuses?: number
@@ -1107,6 +1179,9 @@ export type Database = {
           paid_at?: string | null
           period_month?: number
           period_year?: number
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
           status?: string
           tenant_id?: string
           total_bonuses?: number

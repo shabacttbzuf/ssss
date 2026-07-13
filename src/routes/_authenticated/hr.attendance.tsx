@@ -21,10 +21,43 @@ export const Route = createFileRoute("/_authenticated/hr/attendance")({
 type Row = { id: string; employee_id: string; date: string; check_in: string | null; check_out: string | null; hours_worked: number; is_late: boolean; status: string; notes: string | null };
 type Employee = { id: string; full_name: string };
 
-const statusLabels: Record<string, string> = { present: "حاضر", absent: "غائب", leave: "إجازة", holiday: "عطلة", half_day: "نصف يوم" };
+const statusLabels: Record<string, string> = {
+  present: "حاضر",
+  late: "متأخر",
+  early_leave: "انصراف مبكر",
+  absent: "غائب",
+  absent_excused: "غياب بعذر",
+  absent_unexcused: "غياب بدون عذر",
+  weekly_holiday: "عطلة أسبوعية",
+  annual_leave: "إجازة سنوية",
+  sick_leave: "إجازة مرضية",
+  official_holiday: "عطلة رسمية",
+  mission: "مأمورية",
+  training: "تدريب",
+  suspended: "موقوف",
+  overtime: "ساعات إضافية",
+  leave: "إجازة",
+  holiday: "عطلة",
+  half_day: "نصف يوم",
+};
 const statusColors: Record<string, string> = {
-  present: "bg-success/15 text-success", absent: "bg-destructive/15 text-destructive",
-  leave: "bg-chart-3/15 text-chart-3", holiday: "bg-chart-2/15 text-chart-2", half_day: "bg-chart-4/15 text-chart-4",
+  present: "bg-success/15 text-success",
+  late: "bg-chart-4/15 text-chart-4",
+  early_leave: "bg-chart-4/15 text-chart-4",
+  absent: "bg-destructive/15 text-destructive",
+  absent_excused: "bg-chart-3/15 text-chart-3",
+  absent_unexcused: "bg-destructive/15 text-destructive",
+  weekly_holiday: "bg-chart-2/15 text-chart-2",
+  annual_leave: "bg-chart-3/15 text-chart-3",
+  sick_leave: "bg-chart-3/15 text-chart-3",
+  official_holiday: "bg-chart-2/15 text-chart-2",
+  mission: "bg-primary/15 text-primary",
+  training: "bg-primary/15 text-primary",
+  suspended: "bg-muted text-muted-foreground",
+  overtime: "bg-success/15 text-success",
+  leave: "bg-chart-3/15 text-chart-3",
+  holiday: "bg-chart-2/15 text-chart-2",
+  half_day: "bg-chart-4/15 text-chart-4",
 };
 
 function AttendancePage() {
@@ -161,10 +194,20 @@ function AttendanceDialog({ defaultDate, employees, onSubmit, pending }: {
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="present">حاضر</SelectItem>
+                <SelectItem value="late">متأخر</SelectItem>
+                <SelectItem value="early_leave">انصراف مبكر</SelectItem>
+                <SelectItem value="overtime">ساعات إضافية</SelectItem>
                 <SelectItem value="absent">غائب</SelectItem>
-                <SelectItem value="leave">إجازة</SelectItem>
+                <SelectItem value="absent_excused">غياب بعذر</SelectItem>
+                <SelectItem value="absent_unexcused">غياب بدون عذر</SelectItem>
+                <SelectItem value="weekly_holiday">عطلة أسبوعية</SelectItem>
+                <SelectItem value="official_holiday">عطلة رسمية</SelectItem>
+                <SelectItem value="annual_leave">إجازة سنوية</SelectItem>
+                <SelectItem value="sick_leave">إجازة مرضية</SelectItem>
+                <SelectItem value="mission">مأمورية</SelectItem>
+                <SelectItem value="training">تدريب</SelectItem>
+                <SelectItem value="suspended">موقوف</SelectItem>
                 <SelectItem value="half_day">نصف يوم</SelectItem>
-                <SelectItem value="holiday">عطلة</SelectItem>
               </SelectContent>
             </Select>
           </div>

@@ -29,6 +29,9 @@ type Employee = {
   base_salary: number; hourly_rate: number; bank_name: string | null;
   bank_account: string | null; emergency_contact: string | null;
   avatar_url: string | null; status: string; notes: string | null;
+  salary_type?: string | null; daily_salary?: number | null; hourly_salary?: number | null;
+  working_hours_per_day?: number | null; working_days_per_month?: number | null;
+  work_schedule?: any;
 };
 type Branch = { id: string; name: string };
 
@@ -51,6 +54,12 @@ const schema = z.object({
   notes: z.string().trim().max(1000).optional().or(z.literal("")),
   avatar_url: z.string().url().nullable().optional(),
   status: z.enum(["active","suspended","terminated"]),
+  salary_type: z.enum(["monthly","daily","hourly"]).default("monthly"),
+  working_hours_per_day: z.number().min(1).max(24).default(8),
+  working_days_per_month: z.number().int().min(1).max(31).default(26),
+  daily_salary: z.number().min(0).nullable().optional(),
+  hourly_salary: z.number().min(0).nullable().optional(),
+  work_schedule: z.string().max(400).optional().or(z.literal("")),
 });
 
 const contractLabels: Record<string, string> = {
@@ -123,6 +132,7 @@ function EmployeesPage() {
         avatar_url: v.avatar_url ?? null,
         branch_id: v.branch_id || null,
         tenant_id: tenantId!,
+        work_schedule: v.work_schedule ? { note: v.work_schedule } : null,
       };
       if (editing) {
         const { error } = await supabase.from("employees").update(payload).eq("id", editing.id);
@@ -259,6 +269,18 @@ function EmployeeDialog({ initial, tenantId, branches, onSubmit, pending }: {
   const [notes, setNotes] = useState(initial?.notes ?? "");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(initial?.avatar_url ?? null);
   const [status, setStatus] = useState<any>(initial?.status ?? "active");
+  const [salaryType, setSalaryType] = useState<any>(initial?.salary_type ?? "monthly");
+  const [workingHours, setWorkingHours] = useState(String(initial?.working_hours_per_day ?? 8));
+  const [workingDays, setWorkingDays] = useState(String(initial?.working_days_per_month ?? 26));
+  const [workSchedule, setWorkSchedule] = useState<string>(
+    initial?.work_schedule && typeof initial.work_schedule === "object" && initial.work_schedule.note ? String(initial.work_schedule.note) : "",
+  );
+
+  const baseNum = Number(baseSalary) || 0;
+  const daysNum = Math.max(1, Number(workingDays) || 26);
+  const hoursNum = Math.max(1, Number(workingHours) || 8);
+  const autoDaily = baseNum / daysNum;
+  const autoHourly = autoDaily / hoursNum;
 
   return (
     <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
@@ -272,6 +294,12 @@ function EmployeeDialog({ initial, tenantId, branches, onSubmit, pending }: {
             contract_type: contractType, base_salary: Number(baseSalary) || 0, hourly_rate: Number(hourlyRate) || 0,
             bank_name: bankName, bank_account: bankAccount, emergency_contact: emergency,
             notes, avatar_url: avatarUrl, status,
+            salary_type: salaryType,
+            working_hours_per_day: hoursNum,
+            working_days_per_month: daysNum,
+            daily_salary: +autoDaily.toFixed(2),
+            hourly_salary: +autoHourly.toFixed(2),
+            work_schedule: workSchedule,
           }));
         } catch (err) { if (err instanceof z.ZodError) toast.error(err.issues[0].message); }
       }}>
@@ -307,6 +335,30 @@ function EmployeeDialog({ initial, tenantId, branches, onSubmit, pending }: {
           </div>
           <div className="space-y-2"><Label>الراتب الأساسي</Label><Input type="number" min="0" step="0.01" value={baseSalary} onChange={(e) => setBaseSalary(e.target.value)} /></div>
           <div className="space-y-2"><Label>سعر الساعة</Label><Input type="number" min="0" step="0.01" value={hourlyRate} onChange={(e) => setHourlyRate(e.target.value)} /></div>
+          <div className="space-y-2"><Label>نوع الراتب</Label>
+            <Select value={salaryType} onValueChange={setSalaryType}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="monthly">شهري</SelectItem>
+                <SelectItem value="daily">يومي</SelectItem>
+                <SelectItem value="hourly">بالساعة</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2"><Label>ساعات العمل اليومية</Label>
+            <Input type="number" min="1" max="24" step="0.5" value={workingHours} onChange={(e) => setWorkingHours(e.target.value)} />
+          </div>
+          <div className="space-y-2"><Label>أيام العمل الشهرية</Label>
+            <Input type="number" min="1" max="31" value={workingDays} onChange={(e) => setWorkingDays(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label>الراتب اليومي (تلقائي)</Label>
+            <Input value={autoDaily.toFixed(2)} readOnly className="bg-muted/50 num" />
+          </div>
+          <div className="space-y-2">
+            <Label>الراتب بالساعة (تلقائي)</Label>
+            <Input value={autoHourly.toFixed(2)} readOnly className="bg-muted/50 num" />
+          </div>
           <div className="space-y-2"><Label>البنك</Label><Input value={bankName} onChange={(e) => setBankName(e.target.value)} /></div>
           <div className="space-y-2"><Label>رقم الحساب</Label><Input dir="ltr" value={bankAccount} onChange={(e) => setBankAccount(e.target.value)} /></div>
           <div className="space-y-2"><Label>اتصال للطوارئ</Label><Input dir="ltr" value={emergency} onChange={(e) => setEmergency(e.target.value)} /></div>
@@ -320,6 +372,9 @@ function EmployeeDialog({ initial, tenantId, branches, onSubmit, pending }: {
               </SelectContent>
             </Select>
           </div>
+        </div>
+        <div className="space-y-2"><Label>جدول العمل (وصف مختصر)</Label>
+          <Textarea value={workSchedule} onChange={(e) => setWorkSchedule(e.target.value)} rows={2} placeholder="مثال: السبت - الخميس، 9 صباحاً - 5 مساءً" />
         </div>
         <div className="space-y-2"><Label>ملاحظات</Label><Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} /></div>
         <DialogFooter>
