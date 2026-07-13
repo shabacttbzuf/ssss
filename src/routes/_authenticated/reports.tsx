@@ -41,30 +41,35 @@ function ReportsPage() {
           .eq("tenant_id", tenantId)
           .gte("created_at", fromDate)
           .lte("created_at", toDate)
-          .order("created_at", { ascending: false }),
+          .order("created_at", { ascending: false })
+          .limit(5000),
         supabase
           .from("expenses")
           .select("id, paid_at, amount, category_id, description")
           .eq("tenant_id", tenantId)
           .gte("paid_at", from)
           .lte("paid_at", to)
-          .order("paid_at", { ascending: false }),
+          .order("paid_at", { ascending: false })
+          .limit(5000),
         supabase
           .from("sale_items")
           .select("product_name, quantity, line_total, sale_id, created_at")
           .eq("tenant_id", tenantId)
           .gte("created_at", fromDate)
-          .lte("created_at", toDate),
+          .lte("created_at", toDate)
+          .limit(20000),
         supabase
           .from("cash_sessions")
           .select("cashier_id, opening_balance, closing_balance, expected_cash, cash_difference, opened_at, closed_at, status")
           .eq("tenant_id", tenantId)
           .gte("opened_at", fromDate)
-          .lte("opened_at", toDate),
+          .lte("opened_at", toDate)
+          .limit(5000),
         supabase
           .from("inventory")
           .select("quantity, product_id, branch_id")
-          .eq("tenant_id", tenantId),
+          .eq("tenant_id", tenantId)
+          .limit(10000),
       ]);
 
       if (salesRes.error) throw salesRes.error;
@@ -88,26 +93,25 @@ function ReportsPage() {
       return { sales, expenses, items, sessions, inventory };
     },
     enabled: !!tenantId,
+    staleTime: 60_000,
+    gcTime: 5 * 60_000,
+    refetchOnWindowFocus: false,
   });
 
   const data = report.data;
-  if (!data) {
-    return (
-      <div className="space-y-6">
-        <PageHeader title="التقارير" subtitle="تقارير مبيعات، مصروفات، مخزون وموظفين" />
-        <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
-      </div>
-    );
-  }
+  const safe = useMemo(
+    () => data ?? { sales: [] as any[], expenses: [] as any[], items: [] as any[], sessions: [] as any[], inventory: [] as any[] },
+    [data],
+  );
 
   const totals = useMemo(() => {
-    const salesTotal = data.sales.reduce((s, r) => s + Number(r.total), 0);
-    const expensesTotal = data.expenses.reduce((s, e) => s + Number(e.amount), 0);
-    const discountTotal = data.sales.reduce((s, r) => s + Number(r.discount), 0);
-    const taxTotal = data.sales.reduce((s, r) => s + Number(r.tax_amount), 0);
+    const salesTotal = safe.sales.reduce((s: number, r: any) => s + Number(r.total), 0);
+    const expensesTotal = safe.expenses.reduce((s: number, e: any) => s + Number(e.amount), 0);
+    const discountTotal = safe.sales.reduce((s: number, r: any) => s + Number(r.discount), 0);
+    const taxTotal = safe.sales.reduce((s: number, r: any) => s + Number(r.tax_amount), 0);
     const net = salesTotal - expensesTotal;
     return { salesTotal, expensesTotal, discountTotal, taxTotal, net };
-  }, [data]);
+  }, [safe]);
 
   const groupedSales = useMemo(() => {
     const map = new Map<string, { label: string; sales: number; count: number; expenses: number }>();
@@ -121,7 +125,7 @@ function ReportsPage() {
       if (groupBy === "month") return d.toLocaleDateString("ar-EG", { year: "numeric", month: "short" });
       return d.toLocaleDateString("ar-EG", { month: "short", day: "numeric" });
     };
-    for (const s of data.sales) {
+    for (const s of safe.sales) {
       const d = new Date(s.created_at);
       const key = fmt(d);
       const cur = map.get(key) ?? { label: label(d), sales: 0, count: 0, expenses: 0 };
@@ -129,29 +133,29 @@ function ReportsPage() {
       cur.count += 1;
       map.set(key, cur);
     }
-    for (const e of data.expenses) {
+    for (const e of safe.expenses) {
       const d = new Date(e.paid_at);
       const key = fmt(d);
       const cur = map.get(key);
       if (cur) cur.expenses += Number(e.amount);
     }
     return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
-  }, [data, groupBy]);
+  }, [safe, groupBy]);
 
   const topProducts = useMemo(() => {
     const map = new Map<string, { name: string; qty: number; revenue: number }>();
-    for (const i of data.items) {
+    for (const i of safe.items) {
       const cur = map.get(i.product_name) ?? { name: i.product_name, qty: 0, revenue: 0 };
       cur.qty += Number(i.quantity);
       cur.revenue += Number(i.line_total);
       map.set(i.product_name, cur);
     }
     return Array.from(map.values()).sort((a, b) => b.revenue - a.revenue).slice(0, 10);
-  }, [data.items]);
+  }, [safe.items]);
 
   const cashierStats = useMemo(() => {
     const map = new Map<string, { id: string; sales: number; count: number; cash: number }>();
-    for (const s of data.sales) {
+    for (const s of safe.sales) {
       const cur = map.get(s.cashier_id) ?? { id: s.cashier_id, sales: 0, count: 0, cash: 0 };
       cur.sales += Number(s.total);
       cur.count += 1;
@@ -159,7 +163,16 @@ function ReportsPage() {
       map.set(s.cashier_id, cur);
     }
     return Array.from(map.values()).sort((a, b) => b.sales - a.sales);
-  }, [data.sales]);
+  }, [safe.sales]);
+
+  if (!data) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="التقارير" subtitle="تقارير مبيعات، مصروفات، مخزون وموظفين" />
+        <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+      </div>
+    );
+  }
 
   const exportCsv = (rows: Array<Record<string, string | number>>, filename: string) => {
     if (rows.length === 0) return;
