@@ -29,6 +29,9 @@ type Employee = {
   base_salary: number; hourly_rate: number; bank_name: string | null;
   bank_account: string | null; emergency_contact: string | null;
   avatar_url: string | null; status: string; notes: string | null;
+  salary_type?: string | null; daily_salary?: number | null; hourly_salary?: number | null;
+  working_hours_per_day?: number | null; working_days_per_month?: number | null;
+  work_schedule?: any;
 };
 type Branch = { id: string; name: string };
 
@@ -51,6 +54,12 @@ const schema = z.object({
   notes: z.string().trim().max(1000).optional().or(z.literal("")),
   avatar_url: z.string().url().nullable().optional(),
   status: z.enum(["active","suspended","terminated"]),
+  salary_type: z.enum(["monthly","daily","hourly"]).default("monthly"),
+  working_hours_per_day: z.number().min(1).max(24).default(8),
+  working_days_per_month: z.number().int().min(1).max(31).default(26),
+  daily_salary: z.number().min(0).nullable().optional(),
+  hourly_salary: z.number().min(0).nullable().optional(),
+  work_schedule: z.string().max(400).optional().or(z.literal("")),
 });
 
 const contractLabels: Record<string, string> = {
@@ -123,6 +132,7 @@ function EmployeesPage() {
         avatar_url: v.avatar_url ?? null,
         branch_id: v.branch_id || null,
         tenant_id: tenantId!,
+        work_schedule: v.work_schedule ? { note: v.work_schedule } : null,
       };
       if (editing) {
         const { error } = await supabase.from("employees").update(payload).eq("id", editing.id);
