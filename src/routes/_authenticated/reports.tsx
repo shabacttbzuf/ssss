@@ -233,7 +233,7 @@ function ReportsPage() {
         <Kpi icon={<TrendingUp className="h-5 w-5" />} label="إجمالي المبيعات" value={`${formatMoney(totals.salesTotal)} ${tenant?.currency ?? ""}`} tone="primary" />
         <Kpi icon={<Wallet className="h-5 w-5" />} label="إجمالي المصروفات" value={`${formatMoney(totals.expensesTotal)} ${tenant?.currency ?? ""}`} tone="destructive" />
         <Kpi icon={<FileText className="h-5 w-5" />} label="صافي الربح" value={`${formatMoney(totals.net)} ${tenant?.currency ?? ""}`} tone={totals.net >= 0 ? "success" : "destructive"} />
-        <Kpi icon={<Package className="h-5 w-5" />} label="عدد الفواتير" value={String(data.sales.length)} tone="primary" />
+        <Kpi icon={<Package className="h-5 w-5" />} label="عدد الفواتير" value={String(safe.sales.length)} tone="primary" />
       </div>
 
       <Tabs defaultValue="sales">
