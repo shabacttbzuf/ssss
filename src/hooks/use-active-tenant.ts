@@ -60,7 +60,11 @@ export function useActiveTenant() {
   const tenantQuery = useQuery({
     queryKey: ["tenant", activeId],
     queryFn: async (): Promise<Tenant | null> => {
-      const { data, error } = await supabase.from("tenants").select("*").eq("id", activeId!).maybeSingle();
+      const { data, error } = await supabase
+        .from("tenants")
+        .select("*")
+        .eq("id", activeId!)
+        .maybeSingle();
       if (error) throw error;
       return data as Tenant | null;
     },

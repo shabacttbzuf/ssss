@@ -147,7 +147,7 @@ function UsersPage() {
 
   const branchName = useMemo(() => {
     const m = new Map((branches ?? []).map((b) => [b.id, b.name]));
-    return (id: string | null) => (id ? m.get(id) ?? "—" : "بدون فرع");
+    return (id: string | null) => (id ? (m.get(id) ?? "—") : "بدون فرع");
   }, [branches]);
 
   return (
@@ -207,10 +207,14 @@ function UsersPage() {
                       <div className="min-w-0">
                         <div className="truncate font-semibold">
                           {r.full_name || "—"}
-                          {isSelf && <span className="mr-2 text-xs text-muted-foreground">(أنت)</span>}
+                          {isSelf && (
+                            <span className="mr-2 text-xs text-muted-foreground">(أنت)</span>
+                          )}
                         </div>
                         {r.username && (
-                          <div className="truncate text-xs text-muted-foreground">@{r.username}</div>
+                          <div className="truncate text-xs text-muted-foreground">
+                            @{r.username}
+                          </div>
                         )}
                         {r.phone && (
                           <div className="text-xs text-muted-foreground" dir="ltr">
@@ -310,7 +314,12 @@ function UsersPage() {
   );
 }
 
-async function toggleStatus(row: Row, active: boolean, tenantId: string, qc: ReturnType<typeof useQueryClient>) {
+async function toggleStatus(
+  row: Row,
+  active: boolean,
+  tenantId: string,
+  qc: ReturnType<typeof useQueryClient>,
+) {
   try {
     await toggleUserStatus({
       data: { user_id: row.user_id, tenant_id: tenantId, is_active: active },
@@ -388,47 +397,77 @@ function CreateUserDialog({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>الاسم الكامل *</Label>
-              <Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} />
+              <Input
+                value={form.full_name}
+                onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+              />
             </div>
             <div>
               <Label>اسم المستخدم</Label>
-              <Input value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
+              <Input
+                value={form.username}
+                onChange={(e) => setForm({ ...form, username: e.target.value })}
+              />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>البريد الإلكتروني *</Label>
-              <Input type="email" dir="ltr" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+              <Input
+                type="email"
+                dir="ltr"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+              />
             </div>
             <div>
               <Label>الهاتف</Label>
-              <Input dir="ltr" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+              <Input
+                dir="ltr"
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              />
             </div>
           </div>
           <div>
             <Label>كلمة المرور * (6+ أحرف)</Label>
-            <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+            <Input
+              type="password"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+            />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>الدور</Label>
               <Select value={form.role} onValueChange={(v) => setForm({ ...form, role: v as any })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {ROLES.map((r) => (
-                    <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                    <SelectItem key={r.value} value={r.value}>
+                      {r.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div>
               <Label>الفرع</Label>
-              <Select value={form.branch_id} onValueChange={(v) => setForm({ ...form, branch_id: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                value={form.branch_id}
+                onValueChange={(v) => setForm({ ...form, branch_id: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">بدون فرع محدد</SelectItem>
                   {branches.map((b) => (
-                    <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                    <SelectItem key={b.id} value={b.id}>
+                      {b.name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -436,7 +475,9 @@ function CreateUserDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>إلغاء</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            إلغاء
+          </Button>
           <Button
             onClick={() => mut.mutate()}
             disabled={mut.isPending || !form.email || !form.password || !form.full_name}
@@ -484,7 +525,9 @@ function PasswordDialog({
           <Input type="password" value={pwd} onChange={(e) => setPwd(e.target.value)} />
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>إلغاء</Button>
+          <Button variant="outline" onClick={onClose}>
+            إلغاء
+          </Button>
           <Button onClick={() => mut.mutate()} disabled={mut.isPending || pwd.length < 6}>
             {mut.isPending && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
             حفظ
@@ -548,10 +591,14 @@ function RoleDialog({
           <div>
             <Label>الدور</Label>
             <Select value={role} onValueChange={setRole}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 {ROLES.map((r) => (
-                  <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                  <SelectItem key={r.value} value={r.value}>
+                    {r.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -559,18 +606,24 @@ function RoleDialog({
           <div>
             <Label>الفرع</Label>
             <Select value={branchId} onValueChange={setBranchId}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">بدون فرع محدد</SelectItem>
                 {branches.map((b) => (
-                  <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                  <SelectItem key={b.id} value={b.id}>
+                    {b.name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>إلغاء</Button>
+          <Button variant="outline" onClick={onClose}>
+            إلغاء
+          </Button>
           <Button onClick={() => mut.mutate()} disabled={mut.isPending}>
             {mut.isPending && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
             حفظ
@@ -628,17 +681,23 @@ function TransferDialog({
         <div>
           <Label>الفرع الهدف</Label>
           <Select value={branchId} onValueChange={setBranchId}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">بدون فرع محدد</SelectItem>
               {branches.map((b) => (
-                <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                <SelectItem key={b.id} value={b.id}>
+                  {b.name}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>إلغاء</Button>
+          <Button variant="outline" onClick={onClose}>
+            إلغاء
+          </Button>
           <Button onClick={() => mut.mutate()} disabled={mut.isPending}>
             {mut.isPending && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
             نقل

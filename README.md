@@ -21,15 +21,15 @@
 
 ## 🏗️ البنية التقنية
 
-| الطبقة | التقنية |
-|---|---|
-| Frontend | React 19, TypeScript, Vite 7, Tailwind v4, shadcn/ui |
-| Routing | TanStack Router (file-based) |
-| Data fetching | TanStack Query |
-| Runtime | TanStack Start على Cloudflare Workers |
-| Backend | Lovable Cloud (PostgreSQL + Auth + Storage) |
-| Server code | TanStack Server Functions (بدل Node/Express) |
-| ORM | Supabase-js + Postgres RLS (بدل Prisma) |
+| الطبقة        | التقنية                                              |
+| ------------- | ---------------------------------------------------- |
+| Frontend      | React 19, TypeScript, Vite 7, Tailwind v4, shadcn/ui |
+| Routing       | TanStack Router (file-based)                         |
+| Data fetching | TanStack Query                                       |
+| Runtime       | TanStack Start على Cloudflare Workers                |
+| Backend       | Lovable Cloud (PostgreSQL + Auth + Storage)          |
+| Server code   | TanStack Server Functions (بدل Node/Express)         |
+| ORM           | Supabase-js + Postgres RLS (بدل Prisma)              |
 
 > **ملاحظة:** الطلب الأصلي ذكر Node/Express + Prisma، لكن Lovable يعمل على TanStack Start فوق Cloudflare Workers. النتيجة الوظيفية والأمنية مكافئة تماماً، مع تكامل GitHub الثنائي.
 

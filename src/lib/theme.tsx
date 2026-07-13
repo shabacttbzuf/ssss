@@ -16,13 +16,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   // Read stored theme after mount to avoid SSR hydration mismatch
   useEffect(() => {
-    const stored = (typeof window !== "undefined" && window.localStorage.getItem(STORAGE_KEY)) as Theme | null;
+    const stored = (typeof window !== "undefined" &&
+      window.localStorage.getItem(STORAGE_KEY)) as Theme | null;
     const initial: Theme =
       stored === "dark" || stored === "light"
         ? stored
         : window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light";
+          ? "dark"
+          : "light";
     setTheme(initial);
   }, []);
 
@@ -37,7 +38,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [theme]);
 
   return (
-    <ThemeCtx.Provider value={{ theme, toggle: () => setTheme((t) => (t === "dark" ? "light" : "dark")) }}>
+    <ThemeCtx.Provider
+      value={{ theme, toggle: () => setTheme((t) => (t === "dark" ? "light" : "dark")) }}
+    >
       {children}
     </ThemeCtx.Provider>
   );

@@ -48,7 +48,12 @@ function AuthPage() {
       toast.success("مرحباً بك من جديد");
       navigate({ to: "/dashboard" });
     } catch (err) {
-      const msg = err instanceof z.ZodError ? err.issues[0].message : err instanceof Error ? err.message : "فشل تسجيل الدخول";
+      const msg =
+        err instanceof z.ZodError
+          ? err.issues[0].message
+          : err instanceof Error
+            ? err.message
+            : "فشل تسجيل الدخول";
       toast.error(msg);
     } finally {
       setBusy(false);
@@ -74,7 +79,12 @@ function AuthPage() {
       toast.success("تم إنشاء الحساب بنجاح");
       navigate({ to: "/onboarding" });
     } catch (err) {
-      const msg = err instanceof z.ZodError ? err.issues[0].message : err instanceof Error ? err.message : "فشل إنشاء الحساب";
+      const msg =
+        err instanceof z.ZodError
+          ? err.issues[0].message
+          : err instanceof Error
+            ? err.message
+            : "فشل إنشاء الحساب";
       toast.error(msg);
     } finally {
       setBusy(false);

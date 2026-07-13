@@ -10,17 +10,32 @@ import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Loader2, ShieldAlert, Eye, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 
-export const Route = createFileRoute("/_authenticated/team-permissions")({ component: TeamPermissionsPage });
+export const Route = createFileRoute("/_authenticated/team-permissions")({
+  component: TeamPermissionsPage,
+});
 
 const CATEGORY_LABELS: Record<string, string> = {
-  branches: "الفروع", users: "المستخدمون", catalog: "الكتالوج",
-  sales: "المبيعات", inventory: "المخزون", crm: "العملاء",
-  finance: "المالية", reports: "التقارير", system: "النظام", operations: "العمليات",
+  branches: "الفروع",
+  users: "المستخدمون",
+  catalog: "الكتالوج",
+  sales: "المبيعات",
+  inventory: "المخزون",
+  crm: "العملاء",
+  finance: "المالية",
+  reports: "التقارير",
+  system: "النظام",
+  operations: "العمليات",
 };
 
 function TeamPermissionsPage() {
@@ -37,10 +52,14 @@ function TeamPermissionsPage() {
   const team = useQuery({
     queryKey: ["team-list", tenantId, userId, role, isSuperOwner],
     queryFn: async () => {
-      if (!tenantId || !userId) return [] as Array<{
-        user_id: string; role: string; branch_id: string | null;
-        hired_by: string | null; full_name: string | null;
-      }>;
+      if (!tenantId || !userId)
+        return [] as Array<{
+          user_id: string;
+          role: string;
+          branch_id: string | null;
+          hired_by: string | null;
+          full_name: string | null;
+        }>;
       const { data: rolesRows, error } = await supabase
         .from("user_roles")
         .select("user_id, role, branch_id, hired_by")
@@ -60,7 +79,10 @@ function TeamPermissionsPage() {
     queryKey: ["perm-catalog"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("permissions").select("key, label_ar, category").order("category").order("key");
+        .from("permissions")
+        .select("key, label_ar, category")
+        .order("category")
+        .order("key");
       if (error) throw error;
       return data ?? [];
     },
@@ -86,8 +108,10 @@ function TeamPermissionsPage() {
     queryKey: ["default-role-perms"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("role_permissions").select("builtin_role, permission_key")
-        .is("tenant_id", null).eq("role_kind", "builtin");
+        .from("role_permissions")
+        .select("builtin_role, permission_key")
+        .is("tenant_id", null)
+        .eq("role_kind", "builtin");
       if (error) throw error;
       return data ?? [];
     },
@@ -102,7 +126,10 @@ function TeamPermissionsPage() {
   }, [team.data, isOwner, isManager, isSuperOwner, userId]);
 
   const grouped = useMemo(() => {
-    const g = new Map<string, typeof permissions.data extends undefined ? never : NonNullable<typeof permissions.data>>();
+    const g = new Map<
+      string,
+      typeof permissions.data extends undefined ? never : NonNullable<typeof permissions.data>
+    >();
     for (const p of permissions.data ?? []) {
       const arr = g.get(p.category) ?? [];
       arr.push(p);
@@ -134,39 +161,56 @@ function TeamPermissionsPage() {
   }, [overrides.data]);
 
   const defaultsFor = (role: string) =>
-    new Set((defaultPerms.data ?? []).filter((d) => d.builtin_role === role).map((d) => d.permission_key));
+    new Set(
+      (defaultPerms.data ?? []).filter((d) => d.builtin_role === role).map((d) => d.permission_key),
+    );
 
   const setMut = useMutation({
     mutationFn: (v: { permission_key: string; granted: boolean | null }) =>
-      setPerm({ data: {
-        tenant_id: tenantId!, user_id: selectedUser!,
-        permission_key: v.permission_key, granted: v.granted,
-      } }),
+      setPerm({
+        data: {
+          tenant_id: tenantId!,
+          user_id: selectedUser!,
+          permission_key: v.permission_key,
+          granted: v.granted,
+        },
+      }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["upo", tenantId, selectedUser] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
 
-  if (tLoading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
+  if (tLoading)
+    return (
+      <div className="flex justify-center py-12">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
 
   if (!canAccess) {
     return (
       <div className="space-y-6">
         <PageHeader title="صلاحيات الفريق" />
-        <Card><CardContent className="flex items-center gap-3 p-8 text-muted-foreground">
-          <ShieldAlert className="h-5 w-5 text-destructive" />
-          هذه الصفحة متاحة للمالك أو المدير فقط.
-        </CardContent></Card>
+        <Card>
+          <CardContent className="flex items-center gap-3 p-8 text-muted-foreground">
+            <ShieldAlert className="h-5 w-5 text-destructive" />
+            هذه الصفحة متاحة للمالك أو المدير فقط.
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
-  const subtitle = isSuperOwner ? "كل الأدوار عبر كل المطاعم"
-    : isOwner ? "تحكّم بصلاحيات المديرين ومن وظّفتهم بنفسك، وشاهد صلاحيات فريق المديرين"
-    : "تحكّم بصلاحيات الموظفين الذين وظّفتهم أنت في فرعك";
+  const subtitle = isSuperOwner
+    ? "كل الأدوار عبر كل المطاعم"
+    : isOwner
+      ? "تحكّم بصلاحيات المديرين ومن وظّفتهم بنفسك، وشاهد صلاحيات فريق المديرين"
+      : "تحكّم بصلاحيات الموظفين الذين وظّفتهم أنت في فرعك";
 
-  const roleDefaults = selectedTeamMember ? defaultsFor(selectedTeamMember.role) : new Set<string>();
+  const roleDefaults = selectedTeamMember
+    ? defaultsFor(selectedTeamMember.role)
+    : new Set<string>();
 
   return (
     <div className="space-y-6">
@@ -177,13 +221,17 @@ function TeamPermissionsPage() {
           <div className="space-y-2">
             <div className="text-xs font-semibold text-muted-foreground">اختر موظفاً</div>
             <Select value={selectedUser ?? ""} onValueChange={(v) => setSelectedUser(v)}>
-              <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue placeholder="—" />
+              </SelectTrigger>
               <SelectContent>
                 {filteredTeam.map((m) => (
                   <SelectItem key={m.user_id} value={m.user_id}>
                     <span className="flex items-center gap-2">
                       <span>{m.full_name ?? m.user_id.slice(0, 8)}</span>
-                      <Badge variant="outline" className="text-[10px]">{m.role}</Badge>
+                      <Badge variant="outline" className="text-[10px]">
+                        {m.role}
+                      </Badge>
                     </span>
                   </SelectItem>
                 ))}
@@ -194,15 +242,27 @@ function TeamPermissionsPage() {
             )}
             {selectedTeamMember && (
               <div className="rounded-md border p-3 text-xs">
-                <div><span className="text-muted-foreground">الدور: </span>{selectedTeamMember.role}</div>
-                <div><span className="text-muted-foreground">وظّفه: </span>
-                  {selectedTeamMember.hired_by === userId ? "أنت" : (team.data?.find((t) => t.user_id === selectedTeamMember.hired_by)?.full_name ?? "—")}
+                <div>
+                  <span className="text-muted-foreground">الدور: </span>
+                  {selectedTeamMember.role}
+                </div>
+                <div>
+                  <span className="text-muted-foreground">وظّفه: </span>
+                  {selectedTeamMember.hired_by === userId
+                    ? "أنت"
+                    : (team.data?.find((t) => t.user_id === selectedTeamMember.hired_by)
+                        ?.full_name ?? "—")}
                 </div>
                 <div className="mt-2 flex items-center gap-1 text-[10px]">
                   {canEditSelected ? (
-                    <><span className="text-success">تحرير مسموح</span></>
+                    <>
+                      <span className="text-success">تحرير مسموح</span>
+                    </>
                   ) : (
-                    <><Eye className="h-3 w-3 text-muted-foreground" /> <span className="text-muted-foreground">عرض فقط</span></>
+                    <>
+                      <Eye className="h-3 w-3 text-muted-foreground" />{" "}
+                      <span className="text-muted-foreground">عرض فقط</span>
+                    </>
                   )}
                 </div>
               </div>
@@ -211,28 +271,45 @@ function TeamPermissionsPage() {
 
           <div>
             {!selectedUser ? (
-              <div className="grid h-40 place-items-center text-sm text-muted-foreground">اختر موظفاً لعرض صلاحياته</div>
+              <div className="grid h-40 place-items-center text-sm text-muted-foreground">
+                اختر موظفاً لعرض صلاحياته
+              </div>
             ) : permissions.isLoading || overrides.isLoading ? (
-              <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin" /></div>
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-5 w-5 animate-spin" />
+              </div>
             ) : (
               <div className="space-y-4">
                 {grouped.map(([cat, perms]) => (
                   <div key={cat}>
-                    <div className="mb-2 text-xs font-semibold text-muted-foreground">{CATEGORY_LABELS[cat] ?? cat}</div>
+                    <div className="mb-2 text-xs font-semibold text-muted-foreground">
+                      {CATEGORY_LABELS[cat] ?? cat}
+                    </div>
                     <div className="grid gap-2 sm:grid-cols-2">
                       {(perms as Array<{ key: string; label_ar: string }>).map((p) => {
                         const isOverride = overrideMap.has(p.key);
                         const defaultOn = roleDefaults.has(p.key);
                         const effective = isOverride ? overrideMap.get(p.key)! : defaultOn;
                         return (
-                          <label key={p.key} className={`flex items-center justify-between gap-2 rounded-md border p-2 text-sm ${!canEditSelected ? "opacity-70" : ""}`}>
+                          <label
+                            key={p.key}
+                            className={`flex items-center justify-between gap-2 rounded-md border p-2 text-sm ${!canEditSelected ? "opacity-70" : ""}`}
+                          >
                             <div className="flex-1">
                               <div>{p.label_ar}</div>
-                              <div className="text-[10px] text-muted-foreground" dir="ltr">{p.key}</div>
+                              <div className="text-[10px] text-muted-foreground" dir="ltr">
+                                {p.key}
+                              </div>
                             </div>
                             <div className="flex items-center gap-2">
-                              {isOverride && <Badge variant="secondary" className="text-[9px]">مخصّص</Badge>}
-                              {!canEditSelected && <Lock className="h-3 w-3 text-muted-foreground" />}
+                              {isOverride && (
+                                <Badge variant="secondary" className="text-[9px]">
+                                  مخصّص
+                                </Badge>
+                              )}
+                              {!canEditSelected && (
+                                <Lock className="h-3 w-3 text-muted-foreground" />
+                              )}
                               <Checkbox
                                 checked={effective}
                                 disabled={!canEditSelected || setMut.isPending}

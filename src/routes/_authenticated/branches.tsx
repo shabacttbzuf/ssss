@@ -7,9 +7,22 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Edit, Trash2, Building2, Loader2, Clock, User as UserIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -90,7 +103,8 @@ function BranchesPage() {
   const upsert = useMutation({
     mutationFn: async (input: z.infer<typeof schema>) => {
       const { open_time, close_time, ...rest } = input;
-      const working_hours = open_time || close_time ? { open: open_time || null, close: close_time || null } : null;
+      const working_hours =
+        open_time || close_time ? { open: open_time || null, close: close_time || null } : null;
       const payload = {
         ...rest,
         address: rest.address || null,
@@ -138,9 +152,18 @@ function BranchesPage() {
         subtitle="أدر فروع مطعمك — كل فرع لديه إعدادات وعملة ورقم ضريبي مستقلين."
         action={
           isAdmin && (
-            <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditing(null); }}>
+            <Dialog
+              open={open}
+              onOpenChange={(v) => {
+                setOpen(v);
+                if (!v) setEditing(null);
+              }}
+            >
               <DialogTrigger asChild>
-                <Button><Plus className="ml-2 h-4 w-4" />إضافة فرع</Button>
+                <Button>
+                  <Plus className="ml-2 h-4 w-4" />
+                  إضافة فرع
+                </Button>
               </DialogTrigger>
               <BranchDialog
                 initial={editing}
@@ -155,7 +178,9 @@ function BranchesPage() {
       />
 
       {isLoading ? (
-        <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+        <div className="flex justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        </div>
       ) : !branches || branches.length === 0 ? (
         <EmptyState onAdd={isAdmin ? () => setOpen(true) : undefined} />
       ) : (
@@ -186,16 +211,30 @@ function BranchesPage() {
                     {b.is_active ? "نشط" : "متوقف"}
                   </span>
                 </div>
-                {b.description && <p className="mb-2 text-sm text-muted-foreground line-clamp-2">{b.description}</p>}
+                {b.description && (
+                  <p className="mb-2 text-sm text-muted-foreground line-clamp-2">{b.description}</p>
+                )}
                 <div className="space-y-1 text-sm text-muted-foreground">
                   {b.address && <div>📍 {b.address}</div>}
                   {b.phone && <div dir="ltr">📞 {b.phone}</div>}
-                  {b.tax_number && <div>الرقم الضريبي: <span dir="ltr">{b.tax_number}</span></div>}
+                  {b.tax_number && (
+                    <div>
+                      الرقم الضريبي: <span dir="ltr">{b.tax_number}</span>
+                    </div>
+                  )}
                   {b.working_hours && (b.working_hours.open || b.working_hours.close) && (
-                    <div className="flex items-center gap-1"><Clock className="h-3 w-3" /><span dir="ltr">{b.working_hours.open ?? "—"} - {b.working_hours.close ?? "—"}</span></div>
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      <span dir="ltr">
+                        {b.working_hours.open ?? "—"} - {b.working_hours.close ?? "—"}
+                      </span>
+                    </div>
                   )}
                   {b.manager_id && (
-                    <div className="flex items-center gap-1"><UserIcon className="h-3 w-3" />{managerMap.get(b.manager_id) ?? "—"}</div>
+                    <div className="flex items-center gap-1">
+                      <UserIcon className="h-3 w-3" />
+                      {managerMap.get(b.manager_id) ?? "—"}
+                    </div>
                   )}
                 </div>
                 {isAdmin && (
@@ -204,9 +243,13 @@ function BranchesPage() {
                       size="sm"
                       variant="ghost"
                       className="flex-1"
-                      onClick={() => { setEditing(b); setOpen(true); }}
+                      onClick={() => {
+                        setEditing(b);
+                        setOpen(true);
+                      }}
                     >
-                      <Edit className="ml-2 h-3 w-3" />تعديل
+                      <Edit className="ml-2 h-3 w-3" />
+                      تعديل
                     </Button>
                     <Button
                       size="sm"
@@ -216,7 +259,8 @@ function BranchesPage() {
                         if (confirm(`حذف الفرع "${b.name}"؟`)) del.mutate(b.id);
                       }}
                     >
-                      <Trash2 className="ml-2 h-3 w-3" />حذف
+                      <Trash2 className="ml-2 h-3 w-3" />
+                      حذف
                     </Button>
                   </div>
                 )}
@@ -235,7 +279,12 @@ function EmptyState({ onAdd }: { onAdd?: () => void }) {
       <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
         <Building2 className="h-10 w-10 text-muted-foreground/50" />
         <p className="text-muted-foreground">لا توجد فروع بعد</p>
-        {onAdd && <Button onClick={onAdd}><Plus className="ml-2 h-4 w-4" />أنشئ الفرع الأول</Button>}
+        {onAdd && (
+          <Button onClick={onAdd}>
+            <Plus className="ml-2 h-4 w-4" />
+            أنشئ الفرع الأول
+          </Button>
+        )}
       </CardContent>
     </Card>
   );
@@ -295,14 +344,25 @@ function BranchDialog({
         }}
         className="space-y-4"
       >
-        <ImageUploader tenantId={tenantId} folder="branches" value={imageUrl} onChange={setImageUrl} aspect="wide" />
+        <ImageUploader
+          tenantId={tenantId}
+          folder="branches"
+          value={imageUrl}
+          onChange={setImageUrl}
+          aspect="wide"
+        />
         <div className="space-y-2">
           <Label htmlFor="b-name">اسم الفرع</Label>
           <Input id="b-name" value={name} onChange={(e) => setName(e.target.value)} required />
         </div>
         <div className="space-y-2">
           <Label htmlFor="b-desc">وصف قصير</Label>
-          <Textarea id="b-desc" value={description} onChange={(e) => setDescription(e.target.value)} rows={2} />
+          <Textarea
+            id="b-desc"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={2}
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="b-address">العنوان</Label>
@@ -311,11 +371,22 @@ function BranchDialog({
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-2">
             <Label htmlFor="b-phone">الهاتف</Label>
-            <Input id="b-phone" dir="ltr" value={phone} onChange={(e) => setPhone(e.target.value)} />
+            <Input
+              id="b-phone"
+              dir="ltr"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="b-currency">العملة</Label>
-            <Input id="b-currency" dir="ltr" value={currency} onChange={(e) => setCurrency(e.target.value.toUpperCase())} maxLength={5} />
+            <Input
+              id="b-currency"
+              dir="ltr"
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value.toUpperCase())}
+              maxLength={5}
+            />
           </div>
         </div>
         <div className="space-y-2">
@@ -325,20 +396,38 @@ function BranchDialog({
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-2">
             <Label htmlFor="b-open">وقت الفتح</Label>
-            <Input id="b-open" type="time" dir="ltr" value={openTime} onChange={(e) => setOpenTime(e.target.value)} />
+            <Input
+              id="b-open"
+              type="time"
+              dir="ltr"
+              value={openTime}
+              onChange={(e) => setOpenTime(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="b-close">وقت الإغلاق</Label>
-            <Input id="b-close" type="time" dir="ltr" value={closeTime} onChange={(e) => setCloseTime(e.target.value)} />
+            <Input
+              id="b-close"
+              type="time"
+              dir="ltr"
+              value={closeTime}
+              onChange={(e) => setCloseTime(e.target.value)}
+            />
           </div>
         </div>
         <div className="space-y-2">
           <Label>مدير الفرع</Label>
           <Select value={managerId} onValueChange={setManagerId}>
-            <SelectTrigger><SelectValue placeholder="بدون مدير" /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue placeholder="بدون مدير" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">بدون مدير</SelectItem>
-              {managers.map((m) => <SelectItem key={m.id} value={m.id}>{m.full_name ?? "—"}</SelectItem>)}
+              {managers.map((m) => (
+                <SelectItem key={m.id} value={m.id}>
+                  {m.full_name ?? "—"}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

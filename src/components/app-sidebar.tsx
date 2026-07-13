@@ -138,7 +138,9 @@ export function AppSidebar() {
           {!collapsed && (
             <div className="flex flex-col overflow-hidden">
               <span className="truncate text-sm font-bold text-sidebar-foreground">RAS</span>
-              <span className="truncate text-[10px] text-sidebar-foreground/60">محاسبة المطاعم</span>
+              <span className="truncate text-[10px] text-sidebar-foreground/60">
+                محاسبة المطاعم
+              </span>
             </div>
           )}
         </div>
@@ -154,7 +156,8 @@ export function AppSidebar() {
                     pathname === item.url ||
                     (item.url !== "/dashboard" && pathname.startsWith(item.url + "/")) ||
                     (item.url === "/inventory" && pathname === "/inventory") ||
-                    (item.url === "/inventory/movements" && pathname.startsWith("/inventory/movements"));
+                    (item.url === "/inventory/movements" &&
+                      pathname.startsWith("/inventory/movements"));
                   return (
                     <SidebarMenuItem key={item.url}>
                       <SidebarMenuButton asChild isActive={active} tooltip={item.title}>

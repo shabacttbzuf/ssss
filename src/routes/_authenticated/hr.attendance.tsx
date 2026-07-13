@@ -7,8 +7,21 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Plus, Loader2, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
@@ -18,7 +31,17 @@ export const Route = createFileRoute("/_authenticated/hr/attendance")({
   component: AttendancePage,
 });
 
-type Row = { id: string; employee_id: string; date: string; check_in: string | null; check_out: string | null; hours_worked: number; is_late: boolean; status: string; notes: string | null };
+type Row = {
+  id: string;
+  employee_id: string;
+  date: string;
+  check_in: string | null;
+  check_out: string | null;
+  hours_worked: number;
+  is_late: boolean;
+  status: string;
+  notes: string | null;
+};
 type Employee = { id: string; full_name: string };
 
 const statusLabels: Record<string, string> = {
@@ -69,7 +92,12 @@ function AttendancePage() {
   const rows = useQuery({
     queryKey: ["attendance", tenantId, date],
     queryFn: async (): Promise<Row[]> => {
-      const { data, error } = await supabase.from("attendance").select("*").eq("tenant_id", tenantId!).eq("date", date).order("employee_id");
+      const { data, error } = await supabase
+        .from("attendance")
+        .select("*")
+        .eq("tenant_id", tenantId!)
+        .eq("date", date)
+        .order("employee_id");
       if (error) throw error;
       return (data ?? []) as Row[];
     },
@@ -79,7 +107,11 @@ function AttendancePage() {
   const employees = useQuery({
     queryKey: ["employees-min", tenantId],
     queryFn: async (): Promise<Employee[]> => {
-      const { data, error } = await supabase.from("employees").select("id, full_name").eq("tenant_id", tenantId!).eq("status", "active");
+      const { data, error } = await supabase
+        .from("employees")
+        .select("id, full_name")
+        .eq("tenant_id", tenantId!)
+        .eq("status", "active");
       if (error) throw error;
       return (data ?? []) as Employee[];
     },
@@ -89,7 +121,14 @@ function AttendancePage() {
   const empName = (id: string) => employees.data?.find((e) => e.id === id)?.full_name ?? "—";
 
   const create = useMutation({
-    mutationFn: async (v: { employee_id: string; date: string; status: string; check_in: string; check_out: string; notes: string }) => {
+    mutationFn: async (v: {
+      employee_id: string;
+      date: string;
+      status: string;
+      check_in: string;
+      check_out: string;
+      notes: string;
+    }) => {
       let hours = 0;
       if (v.check_in && v.check_out) {
         const [h1, m1] = v.check_in.split(":").map(Number);
@@ -97,74 +136,142 @@ function AttendancePage() {
         hours = Math.max(0, (h2 * 60 + m2 - h1 * 60 - m1) / 60);
       }
       const payload: any = {
-        tenant_id: tenantId!, employee_id: v.employee_id, date: v.date, status: v.status,
+        tenant_id: tenantId!,
+        employee_id: v.employee_id,
+        date: v.date,
+        status: v.status,
         check_in: v.check_in ? `${v.date}T${v.check_in}:00` : null,
         check_out: v.check_out ? `${v.date}T${v.check_out}:00` : null,
-        hours_worked: hours, notes: v.notes || null,
+        hours_worked: hours,
+        notes: v.notes || null,
       };
-      const { error } = await supabase.from("attendance").upsert(payload, { onConflict: "employee_id,date" });
+      const { error } = await supabase
+        .from("attendance")
+        .upsert(payload, { onConflict: "employee_id,date" });
       if (error) throw error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["attendance", tenantId, date] }); toast.success("تم"); setOpen(false); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["attendance", tenantId, date] });
+      toast.success("تم");
+      setOpen(false);
+    },
     onError: (e) => toast.error(e instanceof Error ? e.message : "فشل"),
   });
 
   return (
     <div className="space-y-6">
-      <PageHeader title="سجل الحضور" subtitle={formatDate(date)}
-        action={isAdmin && (
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild><Button><Plus className="ml-2 h-4 w-4" />تسجيل حضور</Button></DialogTrigger>
-            <AttendanceDialog defaultDate={date} employees={employees.data ?? []} onSubmit={(v) => create.mutate(v)} pending={create.isPending} />
-          </Dialog>
-        )}
+      <PageHeader
+        title="سجل الحضور"
+        subtitle={formatDate(date)}
+        action={
+          isAdmin && (
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="ml-2 h-4 w-4" />
+                  تسجيل حضور
+                </Button>
+              </DialogTrigger>
+              <AttendanceDialog
+                defaultDate={date}
+                employees={employees.data ?? []}
+                onSubmit={(v) => create.mutate(v)}
+                pending={create.isPending}
+              />
+            </Dialog>
+          )
+        }
       />
 
       <div className="flex items-center gap-2">
         <Label>التاريخ</Label>
-        <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-44" />
+        <Input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          className="w-44"
+        />
       </div>
 
       {rows.isLoading ? (
-        <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+        <div className="flex justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        </div>
       ) : (rows.data ?? []).length === 0 ? (
-        <Card><CardContent className="flex flex-col items-center gap-3 py-16 text-center">
-          <Clock className="h-10 w-10 text-muted-foreground/50" />
-          <p className="text-muted-foreground">لا يوجد سجل حضور لهذا اليوم</p>
-        </CardContent></Card>
+        <Card>
+          <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
+            <Clock className="h-10 w-10 text-muted-foreground/50" />
+            <p className="text-muted-foreground">لا يوجد سجل حضور لهذا اليوم</p>
+          </CardContent>
+        </Card>
       ) : (
-        <Card><CardContent className="p-0">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-right">
-              <tr>
-                <th className="p-3 font-medium">الموظف</th>
-                <th className="p-3 font-medium">الحالة</th>
-                <th className="p-3 font-medium">دخول</th>
-                <th className="p-3 font-medium">خروج</th>
-                <th className="p-3 font-medium">ساعات</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(rows.data ?? []).map((r) => (
-                <tr key={r.id} className="border-t">
-                  <td className="p-3">{empName(r.employee_id)}</td>
-                  <td className="p-3"><span className={`rounded-full px-2 py-0.5 text-[10px] ${statusColors[r.status]}`}>{statusLabels[r.status]}</span></td>
-                  <td className="p-3 text-muted-foreground num">{r.check_in ? new Date(r.check_in).toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" }) : "—"}</td>
-                  <td className="p-3 text-muted-foreground num">{r.check_out ? new Date(r.check_out).toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" }) : "—"}</td>
-                  <td className="p-3 num font-medium">{Number(r.hours_worked).toFixed(2)}</td>
+        <Card>
+          <CardContent className="p-0">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50 text-right">
+                <tr>
+                  <th className="p-3 font-medium">الموظف</th>
+                  <th className="p-3 font-medium">الحالة</th>
+                  <th className="p-3 font-medium">دخول</th>
+                  <th className="p-3 font-medium">خروج</th>
+                  <th className="p-3 font-medium">ساعات</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </CardContent></Card>
+              </thead>
+              <tbody>
+                {(rows.data ?? []).map((r) => (
+                  <tr key={r.id} className="border-t">
+                    <td className="p-3">{empName(r.employee_id)}</td>
+                    <td className="p-3">
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[10px] ${statusColors[r.status]}`}
+                      >
+                        {statusLabels[r.status]}
+                      </span>
+                    </td>
+                    <td className="p-3 text-muted-foreground num">
+                      {r.check_in
+                        ? new Date(r.check_in).toLocaleTimeString("ar-EG", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "—"}
+                    </td>
+                    <td className="p-3 text-muted-foreground num">
+                      {r.check_out
+                        ? new Date(r.check_out).toLocaleTimeString("ar-EG", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "—"}
+                    </td>
+                    <td className="p-3 num font-medium">{Number(r.hours_worked).toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
 }
 
-function AttendanceDialog({ defaultDate, employees, onSubmit, pending }: {
-  defaultDate: string; employees: Employee[];
-  onSubmit: (v: { employee_id: string; date: string; status: string; check_in: string; check_out: string; notes: string }) => void;
+function AttendanceDialog({
+  defaultDate,
+  employees,
+  onSubmit,
+  pending,
+}: {
+  defaultDate: string;
+  employees: Employee[];
+  onSubmit: (v: {
+    employee_id: string;
+    date: string;
+    status: string;
+    check_in: string;
+    check_out: string;
+    notes: string;
+  }) => void;
   pending: boolean;
 }) {
   const [emp, setEmp] = useState("");
@@ -175,23 +282,46 @@ function AttendanceDialog({ defaultDate, employees, onSubmit, pending }: {
   const [notes, setNotes] = useState("");
   return (
     <DialogContent>
-      <DialogHeader><DialogTitle>تسجيل حضور</DialogTitle></DialogHeader>
-      <form className="space-y-3" onSubmit={(e) => {
-        e.preventDefault();
-        if (!emp) { toast.error("اختر موظف"); return; }
-        onSubmit({ employee_id: emp, date, status, check_in: ci, check_out: co, notes });
-      }}>
-        <div className="space-y-2"><Label>الموظف *</Label>
+      <DialogHeader>
+        <DialogTitle>تسجيل حضور</DialogTitle>
+      </DialogHeader>
+      <form
+        className="space-y-3"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!emp) {
+            toast.error("اختر موظف");
+            return;
+          }
+          onSubmit({ employee_id: emp, date, status, check_in: ci, check_out: co, notes });
+        }}
+      >
+        <div className="space-y-2">
+          <Label>الموظف *</Label>
           <Select value={emp} onValueChange={setEmp}>
-            <SelectTrigger><SelectValue placeholder="اختر" /></SelectTrigger>
-            <SelectContent>{employees.map((e) => <SelectItem key={e.id} value={e.id}>{e.full_name}</SelectItem>)}</SelectContent>
+            <SelectTrigger>
+              <SelectValue placeholder="اختر" />
+            </SelectTrigger>
+            <SelectContent>
+              {employees.map((e) => (
+                <SelectItem key={e.id} value={e.id}>
+                  {e.full_name}
+                </SelectItem>
+              ))}
+            </SelectContent>
           </Select>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-2"><Label>التاريخ</Label><Input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></div>
-          <div className="space-y-2"><Label>الحالة</Label>
+          <div className="space-y-2">
+            <Label>التاريخ</Label>
+            <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label>الحالة</Label>
             <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="present">حاضر</SelectItem>
                 <SelectItem value="late">متأخر</SelectItem>
@@ -211,11 +341,19 @@ function AttendanceDialog({ defaultDate, employees, onSubmit, pending }: {
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2"><Label>الدخول</Label><Input type="time" value={ci} onChange={(e) => setCi(e.target.value)} /></div>
-          <div className="space-y-2"><Label>الخروج</Label><Input type="time" value={co} onChange={(e) => setCo(e.target.value)} /></div>
+          <div className="space-y-2">
+            <Label>الدخول</Label>
+            <Input type="time" value={ci} onChange={(e) => setCi(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label>الخروج</Label>
+            <Input type="time" value={co} onChange={(e) => setCo(e.target.value)} />
+          </div>
         </div>
         <DialogFooter>
-          <Button type="submit" disabled={pending}>{pending && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}حفظ</Button>
+          <Button type="submit" disabled={pending}>
+            {pending && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}حفظ
+          </Button>
         </DialogFooter>
       </form>
     </DialogContent>

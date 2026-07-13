@@ -61,7 +61,10 @@ function Landing() {
 
         <section className="mt-24 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {features.map((f) => (
-            <div key={f.title} className="rounded-xl border bg-card p-6 shadow-sm transition hover:shadow-md">
+            <div
+              key={f.title}
+              className="rounded-xl border bg-card p-6 shadow-sm transition hover:shadow-md"
+            >
               <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <f.icon className="h-5 w-5" />
               </div>

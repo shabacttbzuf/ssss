@@ -1,4 +1,10 @@
-import { createFileRoute, Outlet, redirect, useNavigate, useRouterState } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Outlet,
+  redirect,
+  useNavigate,
+  useRouterState,
+} from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -127,7 +133,9 @@ function TopBar() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel className="text-xs text-muted-foreground">{user?.email}</DropdownMenuLabel>
+            <DropdownMenuLabel className="text-xs text-muted-foreground">
+              {user?.email}
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => navigate({ to: "/profile" })}>
               <UserIcon className="ml-2 h-4 w-4" />

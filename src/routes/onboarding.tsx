@@ -33,7 +33,11 @@ function OnboardingPage() {
   // If user already has a tenant, redirect
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from("user_roles").select("tenant_id").eq("user_id", userId).limit(1);
+      const { data } = await supabase
+        .from("user_roles")
+        .select("tenant_id")
+        .eq("user_id", userId)
+        .limit(1);
       if (data && data.length > 0) {
         navigate({ to: "/dashboard" });
       }
@@ -70,7 +74,9 @@ function OnboardingPage() {
         { name: "حلويات", icon: "cake", sort_order: 3 },
         { name: "إضافات", icon: "plus", sort_order: 4 },
       ];
-      await supabase.from("categories").insert(defaults.map((c) => ({ ...c, tenant_id: tenant.id })));
+      await supabase
+        .from("categories")
+        .insert(defaults.map((c) => ({ ...c, tenant_id: tenant.id })));
 
       return tenant.id;
     },
@@ -79,7 +85,12 @@ function OnboardingPage() {
       navigate({ to: "/dashboard" });
     },
     onError: (err) => {
-      const msg = err instanceof z.ZodError ? err.issues[0].message : err instanceof Error ? err.message : "فشلت العملية";
+      const msg =
+        err instanceof z.ZodError
+          ? err.issues[0].message
+          : err instanceof Error
+            ? err.message
+            : "فشلت العملية";
       toast.error(msg);
     },
   });
@@ -107,12 +118,25 @@ function OnboardingPage() {
             >
               <div className="space-y-2">
                 <Label htmlFor="name">اسم المطعم</Label>
-                <Input id="name" required value={name} onChange={(e) => setName(e.target.value)} placeholder="مطعم الأصالة" />
+                <Input
+                  id="name"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="مطعم الأصالة"
+                />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="currency">العملة</Label>
-                  <Input id="currency" dir="ltr" required value={currency} onChange={(e) => setCurrency(e.target.value.toUpperCase())} maxLength={5} />
+                  <Input
+                    id="currency"
+                    dir="ltr"
+                    required
+                    value={currency}
+                    onChange={(e) => setCurrency(e.target.value.toUpperCase())}
+                    maxLength={5}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="tax">نسبة الضريبة (%)</Label>

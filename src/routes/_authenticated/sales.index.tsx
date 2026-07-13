@@ -5,7 +5,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useActiveTenant } from "@/hooks/use-active-tenant";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Search, Loader2, Receipt, ChevronLeft } from "lucide-react";
 import { formatMoney, formatDateTime } from "@/lib/format";
 import { PageHeader } from "@/components/page-header";
@@ -29,7 +35,10 @@ type SaleRow = {
 };
 
 const methodLabels: Record<string, string> = {
-  cash: "نقدي", card: "بطاقة", transfer: "تحويل", mixed: "مختلط",
+  cash: "نقدي",
+  card: "بطاقة",
+  transfer: "تحويل",
+  mixed: "مختلط",
 };
 const methodColors: Record<string, string> = {
   cash: "bg-success/15 text-success",
@@ -48,7 +57,9 @@ function SalesListPage() {
     queryFn: async (): Promise<SaleRow[]> => {
       const { data, error } = await supabase
         .from("sales")
-        .select("id, invoice_no, created_at, total, discount, tax_amount, subtotal, payment_method, status, branch_id, cashier_id")
+        .select(
+          "id, invoice_no, created_at, total, discount, tax_amount, subtotal, payment_method, status, branch_id, cashier_id",
+        )
         .eq("tenant_id", tenantId!)
         .order("created_at", { ascending: false })
         .limit(200);
@@ -71,15 +82,25 @@ function SalesListPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="الفواتير" subtitle={`${filtered.length} فاتورة — إجمالي ${formatMoney(totalSum)} ${tenant?.currency ?? ""}`} />
+      <PageHeader
+        title="الفواتير"
+        subtitle={`${filtered.length} فاتورة — إجمالي ${formatMoney(totalSum)} ${tenant?.currency ?? ""}`}
+      />
 
       <div className="flex flex-col gap-2 sm:flex-row">
         <div className="relative flex-1">
           <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="ابحث برقم الفاتورة..." value={search} onChange={(e) => setSearch(e.target.value)} className="pr-9" />
+          <Input
+            placeholder="ابحث برقم الفاتورة..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pr-9"
+          />
         </div>
         <Select value={methodFilter} onValueChange={setMethodFilter}>
-          <SelectTrigger className="sm:w-40"><SelectValue placeholder="طريقة الدفع" /></SelectTrigger>
+          <SelectTrigger className="sm:w-40">
+            <SelectValue placeholder="طريقة الدفع" />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">كل الطرق</SelectItem>
             <SelectItem value="cash">نقدي</SelectItem>
@@ -90,12 +111,16 @@ function SalesListPage() {
       </div>
 
       {sales.isLoading ? (
-        <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+        <div className="flex justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        </div>
       ) : filtered.length === 0 ? (
-        <Card><CardContent className="flex flex-col items-center gap-3 py-16 text-center">
-          <Receipt className="h-10 w-10 text-muted-foreground/50" />
-          <p className="text-muted-foreground">لا توجد فواتير</p>
-        </CardContent></Card>
+        <Card>
+          <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
+            <Receipt className="h-10 w-10 text-muted-foreground/50" />
+            <p className="text-muted-foreground">لا توجد فواتير</p>
+          </CardContent>
+        </Card>
       ) : (
         <Card>
           <CardContent className="p-0">
@@ -118,7 +143,9 @@ function SalesListPage() {
                       <td className="p-3 font-mono">#{s.invoice_no}</td>
                       <td className="p-3 text-muted-foreground">{formatDateTime(s.created_at)}</td>
                       <td className="p-3">
-                        <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${methodColors[s.payment_method] ?? "bg-muted"}`}>
+                        <span
+                          className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${methodColors[s.payment_method] ?? "bg-muted"}`}
+                        >
                           {methodLabels[s.payment_method] ?? s.payment_method}
                         </span>
                       </td>
@@ -126,7 +153,11 @@ function SalesListPage() {
                       <td className="p-3 num text-muted-foreground">{formatMoney(s.tax_amount)}</td>
                       <td className="p-3 num font-bold text-primary">{formatMoney(s.total)}</td>
                       <td className="p-3">
-                        <Link to="/sales/$id" params={{ id: s.id }} className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
+                        <Link
+                          to="/sales/$id"
+                          params={{ id: s.id }}
+                          className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                        >
                           التفاصيل <ChevronLeft className="h-3 w-3" />
                         </Link>
                       </td>

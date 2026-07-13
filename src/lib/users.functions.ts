@@ -12,11 +12,7 @@ const ROLE_ENUM = z.enum([
   "kitchen",
 ]);
 
-async function assertTenantAdmin(
-  supabase: any,
-  userId: string,
-  tenantId: string,
-) {
+async function assertTenantAdmin(supabase: any, userId: string, tenantId: string) {
   const { data: isSO } = await supabase.rpc("is_super_owner", { _user_id: userId });
   if (isSO) return;
   const { data, error } = await supabase
@@ -67,18 +63,16 @@ export const createUser = createServerFn({ method: "POST" })
     const newId = created.user.id;
 
     // Upsert profile (the handle_new_user trigger creates a minimal one)
-    const { error: profErr } = await supabaseAdmin
-      .from("profiles")
-      .upsert({
-        id: newId,
-        full_name: data.full_name,
-        username: data.username ?? null,
-        phone: data.phone ?? null,
-        avatar_url: data.avatar_url ?? null,
-        tenant_id: data.tenant_id,
-        branch_id: data.branch_id ?? null,
-        is_active: true,
-      });
+    const { error: profErr } = await supabaseAdmin.from("profiles").upsert({
+      id: newId,
+      full_name: data.full_name,
+      username: data.username ?? null,
+      phone: data.phone ?? null,
+      avatar_url: data.avatar_url ?? null,
+      tenant_id: data.tenant_id,
+      branch_id: data.branch_id ?? null,
+      is_active: true,
+    });
     if (profErr) throw new Error(profErr.message);
 
     // Assign role
@@ -265,4 +259,3 @@ export const updateMyProfile = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
-

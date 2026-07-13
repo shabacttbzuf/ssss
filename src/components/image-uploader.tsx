@@ -13,7 +13,14 @@ type Props = {
 
 const YEAR = 60 * 60 * 24 * 365;
 
-export function ImageUploader({ tenantId, folder, value, onChange, aspect = "square", label = "الصورة" }: Props) {
+export function ImageUploader({
+  tenantId,
+  folder,
+  value,
+  onChange,
+  aspect = "square",
+  label = "الصورة",
+}: Props) {
   const [uploading, setUploading] = useState(false);
 
   async function handle(e: React.ChangeEvent<HTMLInputElement>) {
@@ -27,7 +34,9 @@ export function ImageUploader({ tenantId, folder, value, onChange, aspect = "squ
     try {
       const ext = file.name.split(".").pop() ?? "jpg";
       const path = `${tenantId}/${folder}/${crypto.randomUUID()}.${ext}`;
-      const { error } = await supabase.storage.from("restaurant-assets").upload(path, file, { upsert: true });
+      const { error } = await supabase.storage
+        .from("restaurant-assets")
+        .upload(path, file, { upsert: true });
       if (error) throw error;
       const { data } = await supabase.storage.from("restaurant-assets").createSignedUrl(path, YEAR);
       if (data?.signedUrl) onChange(data.signedUrl);
@@ -40,9 +49,7 @@ export function ImageUploader({ tenantId, folder, value, onChange, aspect = "squ
     }
   }
 
-  const boxClass = aspect === "wide"
-    ? "h-24 w-40"
-    : "h-20 w-20";
+  const boxClass = aspect === "wide" ? "h-24 w-40" : "h-20 w-20";
 
   return (
     <div className="space-y-2">
@@ -62,15 +69,27 @@ export function ImageUploader({ tenantId, folder, value, onChange, aspect = "squ
               </button>
             </>
           ) : (
-            <div className="grid h-full place-items-center"><ImageIcon className="h-6 w-6 text-muted-foreground" /></div>
+            <div className="grid h-full place-items-center">
+              <ImageIcon className="h-6 w-6 text-muted-foreground" />
+            </div>
           )}
         </div>
         <label className="flex-1">
           <div className="flex cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed p-4 text-sm text-muted-foreground hover:bg-muted/50">
-            {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+            {uploading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Upload className="h-4 w-4" />
+            )}
             {uploading ? "جاري الرفع..." : "اختر صورة (حد أقصى 5MB)"}
           </div>
-          <input type="file" accept="image/*" className="hidden" onChange={handle} disabled={uploading} />
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handle}
+            disabled={uploading}
+          />
         </label>
       </div>
     </div>

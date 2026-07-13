@@ -47,9 +47,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          حدث خطأ غير متوقع
-        </h1>
+        <h1 className="text-xl font-semibold tracking-tight text-foreground">حدث خطأ غير متوقع</h1>
         <p className="mt-2 text-sm text-muted-foreground">حاول تحديث الصفحة أو العودة للرئيسية.</p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
@@ -88,14 +86,27 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "نظام محاسبة المطاعم — Restaurant Accounting System" },
       {
         property: "og:description",
-        content: "نظام محاسبي احترافي متكامل لإدارة المطاعم: الفروع، المنتجات، المخزون، المبيعات، والتقارير المالية.",
+        content:
+          "نظام محاسبي احترافي متكامل لإدارة المطاعم: الفروع، المنتجات، المخزون، المبيعات، والتقارير المالية.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "نظام محاسبة المطاعم — Restaurant Accounting System" },
-      { name: "twitter:description", content: "نظام محاسبي احترافي متكامل لإدارة المطاعم: الفروع، المنتجات، المخزون، المبيعات، والتقارير المالية." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2546aa3a-4544-4f9b-9918-fa74af3babf6/id-preview-bf981b62--2a66f0d7-6e7a-44db-a0b3-b5233ce90fc1.lovable.app-1783506986801.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2546aa3a-4544-4f9b-9918-fa74af3babf6/id-preview-bf981b62--2a66f0d7-6e7a-44db-a0b3-b5233ce90fc1.lovable.app-1783506986801.png" },
+      {
+        name: "twitter:description",
+        content:
+          "نظام محاسبي احترافي متكامل لإدارة المطاعم: الفروع، المنتجات، المخزون، المبيعات، والتقارير المالية.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2546aa3a-4544-4f9b-9918-fa74af3babf6/id-preview-bf981b62--2a66f0d7-6e7a-44db-a0b3-b5233ce90fc1.lovable.app-1783506986801.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2546aa3a-4544-4f9b-9918-fa74af3babf6/id-preview-bf981b62--2a66f0d7-6e7a-44db-a0b3-b5233ce90fc1.lovable.app-1783506986801.png",
+      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

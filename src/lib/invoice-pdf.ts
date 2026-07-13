@@ -83,7 +83,8 @@ export function generateInvoicePDF(data: InvoiceData): Blob {
 
   doc.setFont("helvetica", "normal");
   for (const item of data.items) {
-    const name = item.product_name.length > 22 ? item.product_name.slice(0, 22) + "…" : item.product_name;
+    const name =
+      item.product_name.length > 22 ? item.product_name.slice(0, 22) + "…" : item.product_name;
     doc.text(name, 4, y);
     doc.text(String(item.quantity), 44, y, { align: "right" });
     doc.text(formatMoney(item.unit_price), 58, y, { align: "right" });

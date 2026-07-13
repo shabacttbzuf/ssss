@@ -48,7 +48,12 @@ function SettingsPage() {
       toast.success("تم حفظ الإعدادات");
     },
     onError: (e) => {
-      const msg = e instanceof z.ZodError ? e.issues[0].message : e instanceof Error ? e.message : "فشل الحفظ";
+      const msg =
+        e instanceof z.ZodError
+          ? e.issues[0].message
+          : e instanceof Error
+            ? e.message
+            : "فشل الحفظ";
       toast.error(msg);
     },
   });
@@ -67,19 +72,46 @@ function SettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); save.mutate(); }}>
+          <form
+            className="space-y-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              save.mutate();
+            }}
+          >
             <div className="space-y-2">
               <Label>اسم المطعم</Label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} required disabled={!canEdit} />
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                disabled={!canEdit}
+              />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label>العملة</Label>
-                <Input value={currency} onChange={(e) => setCurrency(e.target.value.toUpperCase())} maxLength={5} dir="ltr" required disabled={!canEdit} />
+                <Input
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value.toUpperCase())}
+                  maxLength={5}
+                  dir="ltr"
+                  required
+                  disabled={!canEdit}
+                />
               </div>
               <div className="space-y-2">
                 <Label>نسبة الضريبة (%)</Label>
-                <Input type="number" min="0" max="100" step="0.01" value={tax} onChange={(e) => setTax(e.target.value)} required disabled={!canEdit} />
+                <Input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  value={tax}
+                  onChange={(e) => setTax(e.target.value)}
+                  required
+                  disabled={!canEdit}
+                />
               </div>
             </div>
             <Button type="submit" disabled={!canEdit || save.isPending}>
@@ -87,9 +119,7 @@ function SettingsPage() {
               حفظ التغييرات
             </Button>
             {!isAdmin && (
-              <p className="text-xs text-muted-foreground">
-                * هذه الصفحة للعرض فقط بدورك الحالي.
-              </p>
+              <p className="text-xs text-muted-foreground">* هذه الصفحة للعرض فقط بدورك الحالي.</p>
             )}
           </form>
         </CardContent>

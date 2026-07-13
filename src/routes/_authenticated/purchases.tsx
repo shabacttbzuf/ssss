@@ -8,8 +8,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Loader2, Plus, FileText, Trash2, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
@@ -20,12 +32,23 @@ export const Route = createFileRoute("/_authenticated/purchases")({
 });
 
 type PurchaseRow = {
-  id: string; reference: string | null; supplier_id: string | null;
-  branch_id: string; user_id: string;
-  total: number; status: string; created_at: string;
+  id: string;
+  reference: string | null;
+  supplier_id: string | null;
+  branch_id: string;
+  user_id: string;
+  total: number;
+  status: string;
+  created_at: string;
 };
 type Product = { id: string; name: string; unit: string; cost_price: number };
-type CartLine = { product_id: string; name: string; unit: string; quantity: string; cost_price: string };
+type CartLine = {
+  product_id: string;
+  name: string;
+  unit: string;
+  quantity: string;
+  cost_price: string;
+};
 
 function PurchasesPage() {
   const { tenantId, userId, isAdmin, role, membership } = useActiveTenant();
@@ -43,14 +66,24 @@ function PurchasesPage() {
         .limit(100);
       if (error) throw error;
       const list = (data ?? []) as PurchaseRow[];
-      const supIds = Array.from(new Set(list.map((p) => p.supplier_id).filter(Boolean) as string[]));
+      const supIds = Array.from(
+        new Set(list.map((p) => p.supplier_id).filter(Boolean) as string[]),
+      );
       const brIds = Array.from(new Set(list.map((p) => p.branch_id)));
       const [supRes, brRes] = await Promise.all([
-        supIds.length > 0 ? supabase.from("suppliers").select("id, name").in("id", supIds) : Promise.resolve({ data: [] }),
-        brIds.length > 0 ? supabase.from("branches").select("id, name").in("id", brIds) : Promise.resolve({ data: [] }),
+        supIds.length > 0
+          ? supabase.from("suppliers").select("id, name").in("id", supIds)
+          : Promise.resolve({ data: [] }),
+        brIds.length > 0
+          ? supabase.from("branches").select("id, name").in("id", brIds)
+          : Promise.resolve({ data: [] }),
       ]);
-      const supMap = new Map((supRes.data ?? []).map((s) => [(s as { id: string }).id, (s as { name: string }).name]));
-      const brMap = new Map((brRes.data ?? []).map((b) => [(b as { id: string }).id, (b as { name: string }).name]));
+      const supMap = new Map(
+        (supRes.data ?? []).map((s) => [(s as { id: string }).id, (s as { name: string }).name]),
+      );
+      const brMap = new Map(
+        (brRes.data ?? []).map((b) => [(b as { id: string }).id, (b as { name: string }).name]),
+      );
       return { list, supMap, brMap };
     },
     enabled: !!tenantId,
@@ -64,17 +97,26 @@ function PurchasesPage() {
         title="فواتير الشراء"
         subtitle="أدخل فاتورة شراء وسيتم تحديث المخزون تلقائياً"
         action={
-          canCreate && <Button onClick={() => setCreating(true)}><Plus className="ml-2 h-4 w-4" />فاتورة جديدة</Button>
+          canCreate && (
+            <Button onClick={() => setCreating(true)}>
+              <Plus className="ml-2 h-4 w-4" />
+              فاتورة جديدة
+            </Button>
+          )
         }
       />
 
       {purchases.isLoading ? (
-        <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+        <div className="flex justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        </div>
       ) : !purchases.data || purchases.data.list.length === 0 ? (
-        <Card><CardContent className="flex flex-col items-center gap-3 py-16 text-center">
-          <ShoppingBag className="h-10 w-10 text-muted-foreground/50" />
-          <p className="text-muted-foreground">لا توجد فواتير شراء</p>
-        </CardContent></Card>
+        <Card>
+          <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
+            <ShoppingBag className="h-10 w-10 text-muted-foreground/50" />
+            <p className="text-muted-foreground">لا توجد فواتير شراء</p>
+          </CardContent>
+        </Card>
       ) : (
         <Card>
           <CardContent className="p-0">
@@ -93,10 +135,16 @@ function PurchasesPage() {
                   {purchases.data.list.map((p) => (
                     <tr key={p.id} className="border-t hover:bg-muted/30">
                       <td className="p-3 font-mono">{p.reference ?? p.id.slice(0, 6)}</td>
-                      <td className="p-3">{p.supplier_id ? (purchases.data?.supMap.get(p.supplier_id) ?? "—") : "—"}</td>
-                      <td className="p-3 text-muted-foreground">{purchases.data?.brMap.get(p.branch_id) ?? "—"}</td>
+                      <td className="p-3">
+                        {p.supplier_id ? (purchases.data?.supMap.get(p.supplier_id) ?? "—") : "—"}
+                      </td>
+                      <td className="p-3 text-muted-foreground">
+                        {purchases.data?.brMap.get(p.branch_id) ?? "—"}
+                      </td>
                       <td className="p-3 num font-bold text-primary">{formatMoney(p.total)}</td>
-                      <td className="p-3 text-xs text-muted-foreground">{formatDateTime(p.created_at)}</td>
+                      <td className="p-3 text-xs text-muted-foreground">
+                        {formatDateTime(p.created_at)}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -123,8 +171,16 @@ function PurchasesPage() {
 }
 
 function NewPurchaseDialog({
-  onDone, tenantId, userId, defaultBranchId,
-}: { onDone: () => void; tenantId: string; userId: string; defaultBranchId: string | null }) {
+  onDone,
+  tenantId,
+  userId,
+  defaultBranchId,
+}: {
+  onDone: () => void;
+  tenantId: string;
+  userId: string;
+  defaultBranchId: string | null;
+}) {
   const [branchId, setBranchId] = useState<string>(defaultBranchId ?? "");
   const [supplierId, setSupplierId] = useState<string>("none");
   const [reference, setReference] = useState("");
@@ -135,22 +191,37 @@ function NewPurchaseDialog({
   const branches = useQuery({
     queryKey: ["branches-active-purchase", tenantId],
     queryFn: async () => {
-      const { data } = await supabase.from("branches").select("id, name").eq("tenant_id", tenantId).eq("is_active", true);
+      const { data } = await supabase
+        .from("branches")
+        .select("id, name")
+        .eq("tenant_id", tenantId)
+        .eq("is_active", true);
       return (data ?? []) as Array<{ id: string; name: string }>;
     },
   });
   const suppliers = useQuery({
     queryKey: ["suppliers-min", tenantId],
     queryFn: async () => {
-      const { data } = await supabase.from("suppliers").select("id, name").eq("tenant_id", tenantId).eq("is_active", true);
+      const { data } = await supabase
+        .from("suppliers")
+        .select("id, name")
+        .eq("tenant_id", tenantId)
+        .eq("is_active", true);
       return (data ?? []) as Array<{ id: string; name: string }>;
     },
   });
   const products = useQuery({
     queryKey: ["products-purchase", tenantId],
     queryFn: async (): Promise<Product[]> => {
-      const { data } = await supabase.from("products").select("id, name, unit, cost_price").eq("tenant_id", tenantId).eq("is_active", true).order("name");
-      return (data ?? []).map((p) => ({ ...(p as { id: string; name: string; unit: string; cost_price: number }) }));
+      const { data } = await supabase
+        .from("products")
+        .select("id, name, unit, cost_price")
+        .eq("tenant_id", tenantId)
+        .eq("is_active", true)
+        .order("name");
+      return (data ?? []).map((p) => ({
+        ...(p as { id: string; name: string; unit: string; cost_price: number }),
+      }));
     },
   });
 
@@ -159,9 +230,10 @@ function NewPurchaseDialog({
     if (!branchId && branches.data && branches.data.length > 0) setBranchId(branches.data[0].id);
   }, [branches.data, branchId]);
 
-  const total = useMemo(() =>
-    lines.reduce((s, l) => s + (Number(l.quantity) || 0) * (Number(l.cost_price) || 0), 0)
-  , [lines]);
+  const total = useMemo(
+    () => lines.reduce((s, l) => s + (Number(l.quantity) || 0) * (Number(l.cost_price) || 0), 0),
+    [lines],
+  );
 
   function addLine() {
     if (!addProdId) return;
@@ -171,10 +243,16 @@ function NewPurchaseDialog({
       toast.error("المنتج مضاف بالفعل");
       return;
     }
-    setLines((prev) => [...prev, {
-      product_id: p.id, name: p.name, unit: p.unit,
-      quantity: "1", cost_price: String(p.cost_price ?? 0),
-    }]);
+    setLines((prev) => [
+      ...prev,
+      {
+        product_id: p.id,
+        name: p.name,
+        unit: p.unit,
+        quantity: "1",
+        cost_price: String(p.cost_price ?? 0),
+      },
+    ]);
     setAddProdId("");
   }
 
@@ -229,32 +307,51 @@ function NewPurchaseDialog({
 
   return (
     <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
-      <DialogHeader><DialogTitle>فاتورة شراء جديدة</DialogTitle></DialogHeader>
+      <DialogHeader>
+        <DialogTitle>فاتورة شراء جديدة</DialogTitle>
+      </DialogHeader>
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-2">
             <Label>الفرع</Label>
             <Select value={branchId} onValueChange={setBranchId}>
-              <SelectTrigger><SelectValue placeholder="اختر" /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue placeholder="اختر" />
+              </SelectTrigger>
               <SelectContent>
-                {(branches.data ?? []).map((b) => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
+                {(branches.data ?? []).map((b) => (
+                  <SelectItem key={b.id} value={b.id}>
+                    {b.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
             <Label>المورد</Label>
             <Select value={supplierId} onValueChange={setSupplierId}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">بدون مورد</SelectItem>
-                {(suppliers.data ?? []).map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                {(suppliers.data ?? []).map((s) => (
+                  <SelectItem key={s.id} value={s.id}>
+                    {s.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
         </div>
         <div className="space-y-2">
           <Label>رقم المرجع (اختياري)</Label>
-          <Input value={reference} onChange={(e) => setReference(e.target.value)} placeholder="INV-2026-001" dir="ltr" />
+          <Input
+            value={reference}
+            onChange={(e) => setReference(e.target.value)}
+            placeholder="INV-2026-001"
+            dir="ltr"
+          />
         </div>
 
         <div className="rounded-lg border p-3">
@@ -263,16 +360,27 @@ function NewPurchaseDialog({
           </div>
           <div className="mb-3 flex gap-2">
             <Select value={addProdId} onValueChange={setAddProdId}>
-              <SelectTrigger className="flex-1"><SelectValue placeholder="اختر منتج..." /></SelectTrigger>
+              <SelectTrigger className="flex-1">
+                <SelectValue placeholder="اختر منتج..." />
+              </SelectTrigger>
               <SelectContent>
-                {(products.data ?? []).map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                {(products.data ?? []).map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
-            <Button type="button" onClick={addLine} disabled={!addProdId}><Plus className="ml-1 h-3 w-3" />إضافة</Button>
+            <Button type="button" onClick={addLine} disabled={!addProdId}>
+              <Plus className="ml-1 h-3 w-3" />
+              إضافة
+            </Button>
           </div>
 
           {lines.length === 0 ? (
-            <div className="rounded bg-muted/30 p-4 text-center text-sm text-muted-foreground">لم يُضف أي منتج</div>
+            <div className="rounded bg-muted/30 p-4 text-center text-sm text-muted-foreground">
+              لم يُضف أي منتج
+            </div>
           ) : (
             <table className="w-full text-sm">
               <thead className="text-right">
@@ -289,21 +397,47 @@ function NewPurchaseDialog({
                   <tr key={l.product_id} className="border-t">
                     <td className="p-1">{l.name}</td>
                     <td className="p-1">
-                      <Input type="number" min="0" step="0.001" value={l.quantity}
-                        onChange={(e) => setLines((prev) => prev.map((x, ix) => ix === i ? { ...x, quantity: e.target.value } : x))}
-                        className="h-8 w-20" />
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.001"
+                        value={l.quantity}
+                        onChange={(e) =>
+                          setLines((prev) =>
+                            prev.map((x, ix) =>
+                              ix === i ? { ...x, quantity: e.target.value } : x,
+                            ),
+                          )
+                        }
+                        className="h-8 w-20"
+                      />
                     </td>
                     <td className="p-1">
-                      <Input type="number" min="0" step="0.01" value={l.cost_price}
-                        onChange={(e) => setLines((prev) => prev.map((x, ix) => ix === i ? { ...x, cost_price: e.target.value } : x))}
-                        className="h-8 w-24" />
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={l.cost_price}
+                        onChange={(e) =>
+                          setLines((prev) =>
+                            prev.map((x, ix) =>
+                              ix === i ? { ...x, cost_price: e.target.value } : x,
+                            ),
+                          )
+                        }
+                        className="h-8 w-24"
+                      />
                     </td>
                     <td className="p-1 num font-medium">
                       {formatMoney((Number(l.quantity) || 0) * (Number(l.cost_price) || 0))}
                     </td>
                     <td className="p-1">
-                      <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive"
-                        onClick={() => setLines((prev) => prev.filter((_, ix) => ix !== i))}>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7 text-destructive"
+                        onClick={() => setLines((prev) => prev.filter((_, ix) => ix !== i))}
+                      >
                         <Trash2 className="h-3 w-3" />
                       </Button>
                     </td>
@@ -312,7 +446,9 @@ function NewPurchaseDialog({
               </tbody>
               <tfoot>
                 <tr className="border-t font-bold">
-                  <td colSpan={3} className="p-2 text-left">الإجمالي</td>
+                  <td colSpan={3} className="p-2 text-left">
+                    الإجمالي
+                  </td>
                   <td className="p-2 num text-primary">{formatMoney(total)}</td>
                   <td></td>
                 </tr>
@@ -329,7 +465,8 @@ function NewPurchaseDialog({
       <DialogFooter>
         <Button onClick={() => submit.mutate()} disabled={submit.isPending || lines.length === 0}>
           {submit.isPending && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
-          <FileText className="ml-2 h-4 w-4" />حفظ وتحديث المخزون
+          <FileText className="ml-2 h-4 w-4" />
+          حفظ وتحديث المخزون
         </Button>
       </DialogFooter>
     </DialogContent>

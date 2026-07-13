@@ -21,7 +21,14 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { AlertCircle, Crown, Loader2, ShieldAlert, Trash2, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
@@ -95,10 +102,7 @@ function AdminPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="لوحة إدارة النظام"
-        subtitle="المالك الرئيسي والأدوار والصلاحيات."
-      />
+      <PageHeader title="لوحة إدارة النظام" subtitle="المالك الرئيسي والأدوار والصلاحيات." />
 
       {totalCount === 0 && <BootstrapCard onDone={refetch} />}
 
@@ -144,7 +148,9 @@ function DemoDataTab() {
     mutationFn: () => seed({ data: { tenant_id: tenantId! } }),
     onSuccess: (res: { stats: Record<string, number> }) => {
       const s = res.stats;
-      toast.success(`تم إدخال: ${s.branches} فرع، ${s.categories} قسم، ${s.products} منتج، ${s.customers} عميل، ${s.suppliers} مورد`);
+      toast.success(
+        `تم إدخال: ${s.branches} فرع، ${s.categories} قسم، ${s.products} منتج، ${s.customers} عميل، ${s.suppliers} مورد`,
+      );
       qc.invalidateQueries();
     },
     onError: (e: Error) => toast.error(e.message),
@@ -154,8 +160,8 @@ function DemoDataTab() {
       <CardHeader>
         <CardTitle>بيانات تجريبية للمطعم الحالي</CardTitle>
         <CardDescription>
-          يُضيف فروعاً وأقساماً ومنتجات وعملاء وموردين إلى المطعم <b>{tenant?.name}</b>.
-          العملية آمنة ولا تكرّر البيانات الموجودة.
+          يُضيف فروعاً وأقساماً ومنتجات وعملاء وموردين إلى المطعم <b>{tenant?.name}</b>. العملية
+          آمنة ولا تكرّر البيانات الموجودة.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -193,8 +199,8 @@ function BootstrapCard({ onDone }: { onDone: () => void }) {
           <div>
             <CardTitle>تعيين المالك الرئيسي</CardTitle>
             <CardDescription>
-              لا يوجد مالك رئيسي معيَّن للنظام بعد. اضغط الزر لتعيين نفسك ({user?.email}) كمالك رئيسي.
-              بعد ذلك لا يمكن لأحد الحصول على هذه الصلاحية إلا منك.
+              لا يوجد مالك رئيسي معيَّن للنظام بعد. اضغط الزر لتعيين نفسك ({user?.email}) كمالك
+              رئيسي. بعد ذلك لا يمكن لأحد الحصول على هذه الصلاحية إلا منك.
             </CardDescription>
           </div>
         </div>
@@ -268,13 +274,13 @@ function SuperOwnersTab() {
       <Card className="lg:col-span-2">
         <CardHeader>
           <CardTitle>الملّاك الرئيسيون الحاليون</CardTitle>
-          <CardDescription>
-            صلاحية مطلقة على كل المطاعم والفروع والبيانات.
-          </CardDescription>
+          <CardDescription>صلاحية مطلقة على كل المطاعم والفروع والبيانات.</CardDescription>
         </CardHeader>
         <CardContent>
           {listQuery.isLoading ? (
-            <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin" /></div>
+            <div className="flex justify-center py-6">
+              <Loader2 className="h-5 w-5 animate-spin" />
+            </div>
           ) : (listQuery.data ?? []).length === 0 ? (
             <p className="py-6 text-center text-sm text-muted-foreground">لا يوجد.</p>
           ) : (
@@ -294,9 +300,15 @@ function SuperOwnersTab() {
                     <TableRow key={r.user_id}>
                       <TableCell className="font-medium">
                         {r.full_name ?? "—"}
-                        {isSelf && <Badge variant="secondary" className="mr-2">أنت</Badge>}
+                        {isSelf && (
+                          <Badge variant="secondary" className="mr-2">
+                            أنت
+                          </Badge>
+                        )}
                       </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{r.notes ?? "—"}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {r.notes ?? "—"}
+                      </TableCell>
                       <TableCell className="text-xs">
                         {new Date(r.granted_at).toLocaleDateString("ar-EG")}
                       </TableCell>
@@ -306,7 +318,9 @@ function SuperOwnersTab() {
                           size="icon"
                           disabled={isSelf || revokeMut.isPending}
                           onClick={() => {
-                            if (confirm(`إزالة صلاحية المالك الرئيسي من ${r.full_name ?? r.user_id}؟`)) {
+                            if (
+                              confirm(`إزالة صلاحية المالك الرئيسي من ${r.full_name ?? r.user_id}؟`)
+                            ) {
                               revokeMut.mutate(r.user_id);
                             }
                           }}
@@ -428,7 +442,9 @@ function RolesTab() {
             <TableRow>
               <TableHead className="min-w-[220px]">الصلاحية</TableHead>
               {BUILTIN_ROLES.map((r) => (
-                <TableHead key={r.key} className="text-center">{r.label}</TableHead>
+                <TableHead key={r.key} className="text-center">
+                  {r.label}
+                </TableHead>
               ))}
             </TableRow>
           </TableHeader>
@@ -444,7 +460,9 @@ function RolesTab() {
                   <TableRow key={p.key}>
                     <TableCell>
                       <div className="text-sm">{p.label_ar}</div>
-                      <div className="text-[10px] text-muted-foreground" dir="ltr">{p.key}</div>
+                      <div className="text-[10px] text-muted-foreground" dir="ltr">
+                        {p.key}
+                      </div>
                     </TableCell>
                     {BUILTIN_ROLES.map((r) => {
                       const enabled = permSet.has(`${r.key}::${p.key}`);
@@ -474,4 +492,3 @@ function RolesTab() {
     </Card>
   );
 }
-
